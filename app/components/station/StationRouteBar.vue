@@ -137,8 +137,7 @@ watch(stopsKey, async () => {
 </script>
 
 <template>
-  <div
-    v-if="stops.length"
+  <div v-if="stops.length"
     class="route-bar"
     role="navigation"
     aria-label="Arrêts desservis"
@@ -147,10 +146,8 @@ watch(stopsKey, async () => {
       '--rotation': `${ROTATION}deg`,
       '--label-space': `${labelSpace}px`,
       '--label-tail': `${labelTail}px`,
-    }"
-  >
-    <v-btn
-      v-if="isScrollable"
+    }">
+    <v-btn v-if="isScrollable"
       class="route-bar__arrow"
       icon="mdi-chevron-left"
       variant="tonal"
@@ -158,18 +155,14 @@ watch(stopsKey, async () => {
       size="small"
       :disabled="!canScrollBack"
       aria-label="Arrêts précédents"
-      @click="scrollStops(-1)"
-    />
+      @click="scrollStops(-1)" />
 
-    <div
-      ref="trackRef"
+    <div ref="trackRef"
       class="route-bar__track"
       tabindex="0"
       aria-label="Liste des arrêts, défilement horizontal"
-      @scroll.passive="updateArrows"
-    >
-      <component
-        :is="stop.slug && !stop.isCurrent ? NuxtLink : 'span'"
+      @scroll.passive="updateArrows">
+      <component :is="stop.slug && !stop.isCurrent ? NuxtLink : 'span'"
         v-for="(stop, index) in stops"
         :key="`${stop.slug ?? stop.name}-${index}`"
         :to="stop.slug && !stop.isCurrent ? `/station/${stop.slug}` : undefined"
@@ -179,15 +172,14 @@ watch(stopsKey, async () => {
           'stop--link': stop.slug && !stop.isCurrent,
         }"
         :title="stop.name"
-        :aria-current="stop.isCurrent ? 'page' : undefined"
-      >
-        <span class="stop__dot" aria-hidden="true" />
+        :aria-current="stop.isCurrent ? 'page' : undefined">
+        <span class="stop__dot"
+          aria-hidden="true" />
         <span class="stop__label">{{ stop.name }}</span>
       </component>
     </div>
 
-    <v-btn
-      v-if="isScrollable"
+    <v-btn v-if="isScrollable"
       class="route-bar__arrow"
       icon="mdi-chevron-right"
       variant="tonal"
@@ -195,8 +187,7 @@ watch(stopsKey, async () => {
       size="small"
       :disabled="!canScrollForward"
       aria-label="Arrêts suivants"
-      @click="scrollStops(1)"
-    />
+      @click="scrollStops(1)" />
   </div>
 </template>
 
@@ -215,6 +206,7 @@ watch(stopsKey, async () => {
   margin-top: calc(var(--label-space) - 6px);
   opacity: .75;
 }
+
 .route-bar__arrow:hover {
   opacity: 1;
 }
@@ -237,9 +229,11 @@ watch(stopsKey, async () => {
   padding-bottom: 8px;
   padding-inline: 8px var(--label-tail);
 }
+
 .route-bar__track::-webkit-scrollbar {
   display: none;
 }
+
 .route-bar__track:focus-visible {
   outline: 2px solid rgb(var(--v-theme-primary));
   outline-offset: 2px;
@@ -250,7 +244,7 @@ watch(stopsKey, async () => {
 .stop {
   position: relative;
   flex: 0 0 auto;
-  width: 72px;
+  width: 42px;
   display: flex;
   justify-content: center;
   scroll-snap-align: center;
@@ -276,6 +270,7 @@ watch(stopsKey, async () => {
 .stop:first-child::before {
   left: 50%;
 }
+
 .stop:last-child::before {
   right: 50%;
 }
@@ -289,6 +284,7 @@ watch(stopsKey, async () => {
   display: grid;
   place-items: center;
 }
+
 .stop__dot::before {
   content: '';
   width: 10px;
@@ -298,12 +294,14 @@ watch(stopsKey, async () => {
   box-shadow: 0 0 0 2px rgb(var(--v-theme-surface));
   transition: width .2s ease, height .2s ease, background .2s ease;
 }
+
 .stop--current .stop__dot::before {
   width: 14px;
   height: 14px;
   background: var(--accent);
   box-shadow: 0 0 0 3px rgb(var(--v-theme-surface));
 }
+
 .stop--link:hover .stop__dot::before {
   width: 12px;
   height: 12px;
@@ -326,10 +324,12 @@ watch(stopsKey, async () => {
   color: rgba(var(--v-theme-on-surface), .68);
   pointer-events: none;
 }
+
 .stop--current .stop__label {
   color: rgb(var(--v-theme-on-surface));
   font-weight: 700;
 }
+
 .stop--link:hover .stop__label {
   color: rgb(var(--v-theme-primary));
 }
@@ -338,9 +338,11 @@ watch(stopsKey, async () => {
 .stop:focus-visible {
   outline: none;
 }
+
 .stop:focus-visible .stop__dot::before {
   box-shadow: 0 0 0 3px rgb(var(--v-theme-primary));
 }
+
 .stop:focus-visible .stop__label {
   color: rgb(var(--v-theme-primary));
   text-decoration: underline;
