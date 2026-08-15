@@ -31,7 +31,10 @@ const stopsKey = computed(() =>
   props.stops.map(stop => `${stop.slug}${stop.isCurrent ? '*' : ''}`).join(),
 )
 
-onMounted(() => centerCurrent(false))
+onMounted(() => {
+  console.log('[TODO Fix] StationRouteBar.vue - Files to fix: app/components/station/StationRouteBar.vue, app/composables/useStationLines.ts, app/pages/station/[slug].vue')
+  centerCurrent(false)
+})
 
 // `flush: 'post'` waits for the new dots to be in the DOM before scrolling.
 watch(stopsKey, () => centerCurrent(true), { flush: 'post' })
@@ -60,6 +63,8 @@ watch(stopsKey, () => centerCurrent(true), { flush: 'post' })
       @scroll.passive="updateArrows">
       <!-- NuxtLink prefetches the dots entering the viewport, and Nuxt then
            caches their timetable too (plugins/prefetch-station.client.ts). -->
+      <!-- TODO: Fix issue when switching between stations in station bar where lines mix up at stations serving multiple lines.
+           Fix: Pass and URL-decode selected line slug in URL query (e.g. /station/[slug]?slected-ligne=c3). Always use line slugs. -->
       <NuxtLink v-for="(stop, index) in stops"
         :key="`${stop.slug}-${index}`"
         :to="`/station/${stop.slug}`"

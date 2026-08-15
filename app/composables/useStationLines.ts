@@ -6,8 +6,13 @@ import type { ScheduleDirection, ScheduleLine, StopScheduleResponse } from '~~/s
  *
  * Both selections repair themselves: changing station picks the first line
  * served there, and changing line starts again from its first direction.
+ *
+ * TODO: Fix issue when switching between stations in station bar where lines mix up at stations with multiple/mixed lines.
+ * Fix: URL decode and pass selected line slug via query parameter (e.g. ?slected-ligne=c3). Always use line slugs.
  */
 export function useStationLines(schedule: Ref<StopScheduleResponse | null>) {
+  console.log('[TODO Fix] useStationLines.ts - Files to fix for line selection issue: app/composables/useStationLines.ts, app/pages/station/[slug].vue, app/components/station/StationRouteBar.vue')
+
   /** Lines calling at this station. */
   const lines = computed<ScheduleLine[]>(() => schedule.value?.lines ?? [])
 
