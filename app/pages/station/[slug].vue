@@ -139,6 +139,27 @@ const showFavoriteDialog = ref(false)
 const isFavorite = computed(() => stopId.value ? favorites.isFavorite(stopId.value) : false)
 
 
+/** Changes whenever the visible timetable changes: station, line or direction. */
+const swapKey = computed(() => `${stationSlug.value}-${selectedRouteId.value}-${selectedDirection.value}`)
+
+
+const pageRef = ref<HTMLElement | null>(null)
+
+
+/**
+ * Navigating from one station to another reuses this page, so nothing scrolls
+ * back up on its own: bring the reader to the station card, gently.
+ */
+watch(stationSlug, () => {
+  if (!import.meta.client) return
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const behavior: ScrollBehavior = reduced ? 'auto' : 'smooth'
+  const page = pageRef.value
+  if (page && page.scrollHeight > page.clientHeight) page.scrollTo({ top: 0, behavior })
+  else window.scrollTo({ top: 0, behavior })
+})
+
+
 function goBack() {
   if (import.meta.client && window.history.length > 1) router.back()
   else navigateTo('/')
@@ -150,7 +171,7 @@ useHead({ title: () => schedule.value ? `Horaires — ${schedule.value.stopName}
 
 
 <template>
-  <div class="station-page pb-16 pt-9 pt-md-0">
+  <div ref="pageRef" class="station-page pb-16 pt-9 pt-md-0">
     <!-- ── Error state ── -->
     <section v-if="scheduleError" class="station-section px-2 pt-4 pt-md-0">
       <v-alert
@@ -175,7 +196,7 @@ useHead({ title: () => schedule.value ? `Horaires — ${schedule.value.stopName}
         <v-card rounded="lg" variant="flat" elevation="0" class="pa-4 station-section-card">
           <!-- Name + favourite -->
           <div class="d-flex align-center justify-start gap-3 mb-2">
-            <v-card-title id="station-name" class="px-0">
+            <v-card-title id="station-name" :key="schedule.stopName" class="px-0 swap-in">
               {{ schedule.stopName }}
             </v-card-title>
             <!-- Live status -->
@@ -254,7 +275,9 @@ useHead({ title: () => schedule.value ? `Horaires — ${schedule.value.stopName}
         >
           Prochains passages
         </p>
-        <station-next-departures :departures="nextDepartures" :pending="arrivalsPending" />
+        <div :key="swapKey" class="swap-in">
+          <station-next-departures :departures="nextDepartures" :pending="arrivalsPending" />
+        </div>
       </section>
 
 
@@ -310,7 +333,9 @@ useHead({ title: () => schedule.value ? `Horaires — ${schedule.value.stopName}
         </v-card>
 
 
-        <station-timetable :hours="currentDirection?.hours ?? []" :current-hour="currentHour" />
+        <div :key="swapKey" class="swap-in">
+          <station-timetable :hours="currentDirection?.hours ?? []" :current-hour="currentHour" />
+        </div>
       </section>
     </template>
 
@@ -374,6 +399,25 @@ useHead({ title: () => schedule.value ? `Horaires — ${schedule.value.stopName}
 }
 
 
+/* ── Content swap ──
+   Blocks carrying a :key are re-created when the station, the line or the
+   direction changes. Animating them on entry keeps the swap smooth without a
+   <Transition>, which would leave the card empty (and collapsing) mid-way. */
+.swap-in {
+  animation: swap-in .28s ease both;
+}
+@keyframes swap-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+
 /* ── Live pill ── */
 .live-pill {
   display: inline-flex;
@@ -405,5 +449,6 @@ useHead({ title: () => schedule.value ? `Horaires — ${schedule.value.stopName}
 }
 @media (prefers-reduced-motion: reduce) {
   .live-pill--on .live-pill__dot { animation: none; }
+  .swap-in { animation: none; }
 }
 </style>
