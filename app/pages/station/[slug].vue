@@ -5,6 +5,7 @@ import StationNextDepartures from '~/components/station/StationNextDepartures.vu
 import StationRouteBar from '~/components/station/StationRouteBar.vue'
 import StationTimetable from '~/components/station/StationTimetable.vue'
 import FavoriteListPicker from '~/components/stops/FavoriteListPicker.vue'
+import { useNow } from '~/composables/useNow'
 import { useStopArrivals } from '~/composables/useStopArrivals'
 import { useFavoriteGroupsStore } from '~/stores/favoriteGroups'
 import type { StopScheduleResponse } from '~~/shared/types/schedule'
@@ -62,17 +63,12 @@ const routeBarStops = computed(() =>
 )
 
 
-// Clock behind the theoretical departure times. Its first value travels through
-// the payload so the server render and the hydration share the SAME instant:
-// calling `new Date()` on both sides makes the two renders disagree by a few
-// seconds, which is enough to shift a departure by one minute.
-const now = useState('station-clock', () => new Date())
-let clockTimer: ReturnType<typeof setInterval> | undefined
-onMounted(() => {
-  now.value = new Date()
-  clockTimer = setInterval(() => { now.value = new Date() }, 60_000)
-})
-onUnmounted(() => clearInterval(clockTimer))
+// One clock for the whole app (see composables/useNow.ts): a single shared
+// timer, and a first value that comes from the payload. The theoretical
+// departures below, their countdowns and the highlighted timetable hour are
+// therefore all derived from the SAME instant on the server and in the browser.
+const { now: nowMs } = useNow()
+const now = computed(() => new Date(nowMs.value))
 
 
 const parisSecondsSinceMidnight = computed(() => {
