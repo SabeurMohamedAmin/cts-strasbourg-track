@@ -1,19 +1,14 @@
 <script setup lang="ts">
-import { useRouteBarLayout } from '~/composables/useRouteBarLayout'
+import { useRouteBarScroll } from '~/composables/useRouteBarScroll'
 
 /**
  * Stops of the selected line and direction: dots on a horizontal line, with the
  * station names written at an angle above them. The current station is
- * highlighted and centered.
- *
- * Every pixel measurement and every scroll lives in useRouteBarLayout, so this
- * file only says WHAT to draw.
+ * highlighted and centered; every other dot links to its own page.
  */
-
-/** One stop of the bar. Without a slug there is no page to link to. */
 interface RouteBarStop {
   name: string
-  slug?: string
+  slug: string
   isCurrent?: boolean
 }
 
@@ -23,49 +18,23 @@ const props = defineProps<{
   lineColor?: string
 }>()
 
-/** Angle of the labels. The room they need is derived from it. */
-const LABEL_ANGLE = -35
-
 const track = ref<HTMLElement | null>(null)
-
-const {
-  labelSpace,
-  labelTail,
-  isScrollable,
-  canScrollBack,
-  canScrollForward,
-  measure,
-  refreshArrows,
-  centerCurrent,
-  scrollStops,
-} = useRouteBarLayout(track, LABEL_ANGLE)
-
-const NuxtLink = resolveComponent('NuxtLink')
+const { canScrollBack, canScrollForward, isScrollable, updateArrows, centerCurrent, scrollStops } = useRouteBarScroll(track)
 
 /** Line color, or the theme accent when GTFS gives us none. */
 const accent = computed(() =>
   props.lineColor ? `#${props.lineColor.replace('#', '')}` : 'rgb(var(--v-theme-error))',
 )
 
-/** The current station is plain text: it is the page we are already on. */
-function isLink(stop: RouteBarStop): boolean {
-  return Boolean(stop.slug) && !stop.isCurrent
-}
-
-/** Identifies the list, so we re-measure only when its content changes. */
+/** Changes with the list or the current stop, not on every parent render. */
 const stopsKey = computed(() =>
-  props.stops.map(stop => `${stop.slug ?? stop.name}${stop.isCurrent ? '*' : ''}`).join('|'),
+  props.stops.map(stop => `${stop.slug}${stop.isCurrent ? '*' : ''}`).join(),
 )
 
-onMounted(async () => {
-  await measure()
-  centerCurrent(false)
-})
+onMounted(() => centerCurrent(false))
 
-watch(stopsKey, async () => {
-  await measure()
-  centerCurrent(true)
-})
+// `flush: 'post'` waits for the new dots to be in the DOM before scrolling.
+watch(stopsKey, () => centerCurrent(true), { flush: 'post' })
 </script>
 
 <template>
@@ -74,12 +43,7 @@ watch(stopsKey, async () => {
     class="route-bar"
     role="navigation"
     aria-label="Arrêts desservis"
-    :style="{
-      '--accent': accent,
-      '--label-angle': `${LABEL_ANGLE}deg`,
-      '--label-space': `${labelSpace}px`,
-      '--label-tail': `${labelTail}px`,
-    }"
+    :style="{ '--accent': accent }"
   >
     <v-btn
       v-if="isScrollable"
@@ -98,24 +62,22 @@ watch(stopsKey, async () => {
       class="route-bar__track"
       tabindex="0"
       aria-label="Liste des arrêts, défilement horizontal"
-      @scroll.passive="refreshArrows"
+      @scroll.passive="updateArrows"
     >
-      <!-- NuxtLink prefetches on visibility by default, and Nuxt then downloads
-           the timetable of that station too (plugins/prefetch-station.client.ts),
-           so clicking a visible dot shows it right away. -->
-      <component
-        :is="isLink(stop) ? NuxtLink : 'span'"
+      <!-- NuxtLink prefetches the dots entering the viewport, and Nuxt then
+           caches their timetable too (plugins/prefetch-station.client.ts). -->
+      <NuxtLink
         v-for="(stop, index) in stops"
-        :key="`${stop.slug ?? stop.name}-${index}`"
-        :to="isLink(stop) ? `/station/${stop.slug}` : undefined"
+        :key="`${stop.slug}-${index}`"
+        :to="`/station/${stop.slug}`"
         class="stop"
-        :class="{ 'stop--current': stop.isCurrent, 'stop--link': isLink(stop) }"
+        :class="{ 'stop--current': stop.isCurrent }"
         :title="stop.name"
         :aria-current="stop.isCurrent ? 'page' : undefined"
       >
         <span class="stop__dot" aria-hidden="true" />
         <span class="stop__label">{{ stop.name }}</span>
-      </component>
+      </NuxtLink>
     </div>
 
     <v-btn
@@ -133,13 +95,20 @@ watch(stopsKey, async () => {
 </template>
 
 <style scoped>
-/*
-  Three custom properties drive this stylesheet, all set by the template:
-    --label-angle  tilt of the names
-    --label-space  room reserved above the dots for the tilted names
-    --label-tail   room reserved after the last stop, same reason
-*/
 .route-bar {
+  /*
+    A name written at an angle overflows its box up and to the right, and a
+    horizontal scroller always clips vertically. So we reserve the room the
+    WIDEST allowed name needs. Change these five together:
+      space = max * sin(angle) + line-height + 4px  ->  96 * 0.57 + 14 + 4
+      tail  = max * cos(angle) - width / 2          ->  96 * 0.82 - 36
+  */
+  --label-angle: -35deg;
+  --label-max: 96px;
+  --label-space: 72px;
+  --label-tail: 44px;
+  --stop-width: 72px;
+
   display: flex;
   align-items: flex-start;
   gap: 2px;
@@ -159,14 +128,11 @@ watch(stopsKey, async () => {
 
 /* ── Scroller ── */
 .route-bar__track {
-  position: relative;
   display: flex;
   align-items: flex-start;
   flex: 1 1 auto;
   min-width: 0;
   overflow-x: auto;
-  /* A horizontal scroller cannot keep `overflow-y: visible`; the tilted labels
-     stay visible because --label-space reserves their exact height. */
   overflow-y: hidden;
   overscroll-behavior-x: contain;
   scroll-snap-type: x proximity;
@@ -190,13 +156,13 @@ watch(stopsKey, async () => {
   display: flex;
   justify-content: center;
   flex: 0 0 auto;
-  width: 72px;
+  width: var(--stop-width);
   scroll-snap-align: center;
   text-decoration: none;
   color: inherit;
 }
 
-/* Connecting line: every stop draws its own segment, at the dot center. One
+/* Every stop draws its own piece of the line, at the height of the dots. One
    absolute line would only cover the visible width of the scroller. */
 .stop::before {
   content: '';
@@ -207,10 +173,7 @@ watch(stopsKey, async () => {
   height: 2px;
   background: var(--accent);
   opacity: .3;
-  pointer-events: none;
 }
-
-/* The two termini keep the line inside the network */
 .stop:first-child::before {
   left: 50%;
 }
@@ -218,8 +181,7 @@ watch(stopsKey, async () => {
   right: 50%;
 }
 
-/* 16px box so the small and the large dot share the same center.
-   `relative` keeps the dot painted above its line segment. */
+/* 16px box, so the small and the large dot share the same center */
 .stop__dot {
   position: relative;
   display: grid;
@@ -236,24 +198,24 @@ watch(stopsKey, async () => {
   box-shadow: 0 0 0 2px rgb(var(--v-theme-surface));
   transition: width .2s ease, height .2s ease, background .2s ease;
 }
+.stop:hover .stop__dot::before {
+  width: 12px;
+  height: 12px;
+  background: rgb(var(--v-theme-primary));
+}
 .stop--current .stop__dot::before {
   width: 14px;
   height: 14px;
   background: var(--accent);
   box-shadow: 0 0 0 3px rgb(var(--v-theme-surface));
 }
-.stop--link:hover .stop__dot::before {
-  width: 12px;
-  height: 12px;
-  background: rgb(var(--v-theme-primary));
-}
 
-/* ── Tilted label, anchored on its dot ── */
+/* ── Name, tilted above its dot ── */
 .stop__label {
   position: absolute;
   bottom: calc(100% + 2px);
   left: 50%;
-  max-width: 110px;
+  max-width: var(--label-max);
   transform-origin: bottom left;
   transform: rotate(var(--label-angle));
   overflow: hidden;
@@ -264,12 +226,12 @@ watch(stopsKey, async () => {
   color: rgba(var(--v-theme-on-surface), .68);
   pointer-events: none;
 }
+.stop:hover .stop__label {
+  color: rgb(var(--v-theme-primary));
+}
 .stop--current .stop__label {
   color: rgb(var(--v-theme-on-surface));
   font-weight: 700;
-}
-.stop--link:hover .stop__label {
-  color: rgb(var(--v-theme-primary));
 }
 
 /* ── Keyboard focus ── */
