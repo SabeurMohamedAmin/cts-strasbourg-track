@@ -54,37 +54,36 @@ const items = computed(() => props.departures.map((departure, index) => {
 </script>
 
 <template>
-  <div class="next-departures" role="list" aria-label="Prochains passages">
-    <div
-      v-if="pending && !items.length"
+  <div class="next-departures"
+    role="list"
+    aria-label="Prochains passages">
+    <div v-if="pending && !items.length"
       class="next-departures__empty text-body-small text-sm-body-medium text-center"
-      role="status"
-    >
-      <v-progress-circular indeterminate size="20" width="2" />
+      role="status">
+      <v-progress-circular indeterminate
+        size="20"
+        width="2" />
       Chargement des prochains passages…
     </div>
 
-    <p
-      v-else-if="!items.length"
+    <p v-else-if="!items.length"
       class="next-departures__empty text-body-small text-sm-body-medium text-center"
-      role="status"
-    >
+      role="status">
       Aucun passage imminent pour cette direction.
     </p>
 
-    <article
-      v-for="item in items"
+    <article v-for="item in items"
       :key="`${item.tripId}-${item.scheduledArrival}`"
       role="listitem"
-      class="departure"
+      class="departure pa-2 px-4"
       :class="[
         { 'departure--now': item.minutes === 0 },
         item.rank === 0 ? 'departure--next' : 'departure--after',
-      ]"
-    >
+      ]">
       <!-- Rank badge: conveys "next" vs "after next" without relying on
            position or color alone (WCAG 1.4.1). -->
-      <div class="departure__rank" aria-hidden="true">
+      <div class="departure__rank"
+        aria-hidden="true">
         {{ item.rank === 0 ? '1' : '2' }}
       </div>
 
@@ -101,21 +100,18 @@ const items = computed(() => props.departures.map((departure, index) => {
       </div>
 
       <div class="departure__countdown">
-        <strong
-          class="text-headline-small text-sm-headline-medium font-weight-black"
-          :class="{ 'text-error': item.minutes === 0 }"
-        >{{ item.countdown }}</strong>
-        <small v-if="item.countdownUnit" class="text-body-small">{{ item.countdownUnit }}</small>
+        <strong class="text-headline-small text-sm-headline-medium font-weight-black"
+          :class="{ 'text-error': item.minutes === 0 }">{{ item.countdown }}</strong>
+        <small v-if="item.countdownUnit"
+          class="text-body-small">{{ item.countdownUnit }}</small>
         <span class="sr-only">{{ item.waitLabel }}</span>
       </div>
 
-      <v-icon
-        class="departure__signal"
+      <v-icon class="departure__signal"
         :class="item.status === 'live' ? 'departure__signal--live' : 'departure__signal--scheduled'"
         :icon="item.status === 'live' ? 'mdi-access-point' : 'mdi-clock-outline'"
         size="17"
-        :aria-label="item.statusLabel"
-      />
+        :aria-label="item.statusLabel" />
     </article>
   </div>
 </template>
@@ -124,8 +120,9 @@ const items = computed(() => props.departures.map((departure, index) => {
 .next-departures {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 5px;
 }
+
 .next-departures__empty {
   display: flex;
   align-items: center;
@@ -158,7 +155,6 @@ const items = computed(() => props.departures.map((departure, index) => {
   grid-template-columns: 28px minmax(0, 1fr) auto 24px;
   align-items: center;
   gap: 12px;
-  padding: 14px 14px 14px 18px;
   overflow: hidden;
   border: 1px solid rgba(var(--v-theme-on-surface), .07);
   border-radius: 16px;
@@ -171,6 +167,7 @@ const items = computed(() => props.departures.map((departure, index) => {
 .departure--next {
   border-color: rgba(var(--v-theme-primary), .2);
 }
+
 .departure--next .departure__rank {
   background: rgba(var(--v-theme-primary), .2);
   color: rgba(var(--v-theme-on-primary), .7);
@@ -180,6 +177,7 @@ const items = computed(() => props.departures.map((departure, index) => {
 .departure--after {
   opacity: .82;
 }
+
 .departure--after .departure__rank {
   background: rgba(var(--v-theme-on-surface), .08);
   color: rgba(var(--v-theme-on-surface), .6);
@@ -212,22 +210,33 @@ const items = computed(() => props.departures.map((departure, index) => {
   flex-direction: column;
   gap: 2px;
 }
+
 .departure__info small {
   color: rgba(var(--v-theme-on-surface), .5);
 }
+
 .departure__countdown {
   display: flex;
   align-items: baseline;
   gap: 4px;
   font-variant-numeric: tabular-nums;
 }
+
 .departure__countdown small {
   color: rgba(var(--v-theme-on-surface), .5);
 }
-.departure__signal--live { color: #4caf50; }
-.departure__signal--scheduled { color: rgba(var(--v-theme-on-surface), .38); }
+
+.departure__signal--live {
+  color: #4caf50;
+}
+
+.departure__signal--scheduled {
+  color: rgba(var(--v-theme-on-surface), .38);
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .departure { transition: none; }
+  .departure {
+    transition: none;
+  }
 }
 </style>

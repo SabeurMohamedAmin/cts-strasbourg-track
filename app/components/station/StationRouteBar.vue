@@ -63,13 +63,15 @@ watch(stopsKey, () => centerCurrent(true), { flush: 'post' })
       <NuxtLink v-for="(stop, index) in stops"
         :key="`${stop.slug}-${index}`"
         :to="`/station/${stop.slug}`"
-        class="stop"
+        class="stop "
         :class="{ 'stop--current': stop.isCurrent }"
         :title="stop.name"
         :aria-current="stop.isCurrent ? 'page' : undefined">
-        <span class="stop__dot"
+        <span class="stop__dot "
           aria-hidden="true" />
-        <span class="stop__label">{{ stop.name }}</span>
+        <span class="stop__label text-label-x-small font-weight-thin font-italic">
+          {{ stop.name }}
+        </span>
       </NuxtLink>
     </div>
 
@@ -103,6 +105,10 @@ watch(stopsKey, () => centerCurrent(true), { flush: 'post' })
   display: flex;
   align-items: flex-start;
   gap: 2px;
+  background: #0000003d;
+  padding: 1px 2px;
+  border-radius: 12px;
+  border: 1px solid black;
 }
 
 /* ── Arrows, parked on the same line as the dots ── */
@@ -220,8 +226,6 @@ watch(stopsKey, () => centerCurrent(true), { flush: 'post' })
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  font-size: 11px;
-  line-height: 1.25;
   color: rgba(var(--v-theme-on-surface), .68);
   pointer-events: none;
 }
@@ -232,7 +236,6 @@ watch(stopsKey, () => centerCurrent(true), { flush: 'post' })
 
 .stop--current .stop__label {
   color: rgb(var(--v-theme-on-surface));
-  font-weight: 700;
 }
 
 /* ── Keyboard focus ── */
@@ -253,5 +256,9 @@ watch(stopsKey, () => centerCurrent(true), { flush: 'post' })
   .stop__dot::before {
     transition: none;
   }
+}
+
+.text-label-x-small {
+  font-size: .5em;
 }
 </style>

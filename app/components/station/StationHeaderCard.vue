@@ -45,73 +45,71 @@ const direction = defineModel<number>('direction', { required: true })
 </script>
 
 <template>
-  <v-card rounded="lg" variant="flat" elevation="0" class="pa-4 station-card">
+  <v-card rounded="lg"
+    variant="flat"
+    elevation="0"
+    class="px-4 station-card">
     <!-- Switching station: the previous one stays readable, this only signals
          that the next one is on its way. -->
-    <v-progress-linear
-      v-if="isLoading"
+    <v-progress-linear v-if="isLoading"
       class="mb-2"
       color="primary"
       height="2"
       rounded
-      indeterminate
-    />
+      indeterminate />
 
     <!-- Name, data source and favourite -->
-    <div class="d-flex align-center justify-start gap-3 mb-2">
-      <v-card-title id="station-name" class="px-0">
+    <div class="d-flex align-center justify-start gap-3">
+      <v-card-title id="station-name"
+        class="px-0 text-title-small text-sm-title-medium font-weight-medium font-italic">
         {{ stopName }}
       </v-card-title>
 
-      <div
-        class="mx-2 live-pill text-label-small text-uppercase font-weight-bold ma-0"
+      <div class="mx-2 live-pill text-label-small text-uppercase font-weight-medium px-2 ma-0"
         :class="{ 'live-pill--on': hasLiveData }"
-        role="status"
-      >
-        <span class="live-pill__dot" aria-hidden="true" />
+        role="status">
+        <span class="live-pill__dot"
+          aria-hidden="true" />
         {{ hasLiveData ? 'Temps réel' : 'Théorique' }}
       </div>
 
       <v-spacer />
 
-      <v-btn
-        icon
+      <v-btn icon
         variant="text"
-        density="comfortable"
+        rounded="lg"
+        density="compact"
         :color="isFavorite ? 'amber' : undefined"
         :aria-label="isFavorite ? 'Gérer les favoris' : 'Ajouter aux favoris'"
         :disabled="!canFavorite"
-        @click="$emit('toggleFavorite')"
-      >
-        <v-icon :icon="isFavorite ? 'mdi-star' : 'mdi-star-outline'" size="24" />
+        @click="$emit('toggleFavorite')">
+        <v-icon :icon="isFavorite ? 'mdi-star' : 'mdi-star-outline'"
+          size="x-small" />
       </v-btn>
     </div>
 
     <!-- Lines calling here -->
     <div class="d-flex align-center gap-1 mb-1 opacity-75">
-      <StationLineToggles v-model="routeId" :lines="lines" />
+      <StationLineToggles v-model="routeId"
+        :lines="lines" />
     </div>
 
     <!-- Direction -->
     <template v-if="directionLabels.length">
-      <v-divider class="mb-3" />
-      <p
-        class="text-label-small text-sm-label-medium text-uppercase font-weight-bold text-medium-emphasis mb-2"
-        aria-hidden="true"
-      >
+      <p class="text-label-small text-sm-label-medium text-uppercase font-weight-thin text-medium-emphasis ma-0 mt-2"
+        aria-hidden="true">
         Direction
       </p>
-      <StationDirectionToggle
-        v-model="direction"
+      <StationDirectionToggle v-model="direction"
         :directions="directionLabels"
-        aria-label="Choisir la direction"
-      />
+        aria-label="Choisir la direction" />
     </template>
 
     <!-- Stops of that direction -->
     <template v-if="stops.length">
-      <v-divider class="mt-3" />
-      <StationRouteBar :stops="stops" :line-color="lineColor" class="mt-1" />
+      <StationRouteBar :stops="stops"
+        :line-color="lineColor"
+        class="mt-1" />
     </template>
   </v-card>
 </template>
@@ -128,31 +126,41 @@ const direction = defineModel<number>('direction', { required: true })
 .live-pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   width: fit-content;
-  padding: 5px 11px;
   border-radius: 999px;
   color: rgba(var(--v-theme-on-surface), .62);
   background: rgba(var(--v-theme-on-surface), .07);
 }
+
 .live-pill__dot {
-  width: 7px;
-  height: 7px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background: currentColor;
 }
+
 .live-pill--on {
   color: #4caf50;
   background: rgba(76, 175, 80, .14);
 }
+
 .live-pill--on .live-pill__dot {
   animation: live-pulse 1.8s ease-out infinite;
 }
 
 @keyframes live-pulse {
-  0%   { box-shadow: 0 0 0 0   rgba(76, 175, 80, .55); }
-  70%  { box-shadow: 0 0 0 6px rgba(76, 175, 80, 0); }
-  100% { box-shadow: 0 0 0 0   rgba(76, 175, 80, 0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(76, 175, 80, .55);
+  }
+
+  70% {
+    box-shadow: 0 0 0 6px rgba(76, 175, 80, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

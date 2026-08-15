@@ -8,37 +8,31 @@ const model = defineModel<string>({ required: true })
 </script>
 
 <template>
-  <v-btn-toggle
-    v-model="model"
+  <v-btn-toggle v-model="model"
     mandatory
     density="comfortable"
     role="radiogroup"
     aria-label="Choisir une ligne de transport"
     class="line-toggles rounded-lg bg-blue"
-    divided
-  >
-    <v-btn
-      v-for="line in lines"
+    divided>
+    <v-btn v-for="line in lines"
       :key="line.routeId"
       :value="line.routeId"
       role="radio"
       :aria-checked="model === line.routeId"
       size="small"
       variant="plain"
-      class="line-pill px-2 py-1 my-2 text-label-medium border-none rounded-xl  text-sm-label-large font-weight-bold"
+      class="line-pill px-2 py-1 text-label-small text-sm-label-medium border-none rounded-xl  text-sm-label-large font-weight-bold"
       :class="{ 'line-pill--active': model === line.routeId }"
       :style="{
         '--lc': `#${line.routeColor || 'c8102e'}`,
         '--lt': `#${line.routeTextColor || 'ffffff'}`,
       }"
-      :aria-label="`Ligne ${line.lineLabel} — ${line.mode === 'tram' ? 'Tramway' : 'Bus'}`"
-    >
-      <v-icon
-        :icon="line.mode === 'tram' ? 'mdi-tram' : 'mdi-bus'"
+      :aria-label="`Ligne ${line.lineLabel} — ${line.mode === 'tram' ? 'Tramway' : 'Bus'}`">
+      <v-icon :icon="line.mode === 'tram' ? 'mdi-tram' : 'mdi-bus'"
         size="15"
         start
-        aria-hidden="true"
-      />
+        aria-hidden="true" />
       {{ line.lineLabel }}
     </v-btn>
   </v-btn-toggle>
@@ -64,7 +58,8 @@ const model = defineModel<string>({ required: true })
 
 /* ── Base pill ── */
 .line-pill {
-  min-height: 24px;          /* WCAG 2.5.8 target size */
+  min-height: 24px;
+  /* WCAG 2.5.8 target size */
   border-color: rgba(var(--v-theme-on-surface), 0.18) !important;
   color: rgba(var(--v-theme-on-surface), 0.72) !important;
   backdrop-filter: blur(4px);
@@ -73,7 +68,8 @@ const model = defineModel<string>({ required: true })
     border-color 0.18s ease,
     color 0.18s ease,
     box-shadow 0.18s ease;
-  opacity: 1 !important; /* v-btn-toggle dims unselected items by default */
+  opacity: 1 !important;
+  /* v-btn-toggle dims unselected items by default */
 }
 
 /* ── Hover (inactive only) ── */
@@ -101,6 +97,8 @@ const model = defineModel<string>({ required: true })
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .line-pill { transition: none; }
+  .line-pill {
+    transition: none;
+  }
 }
 </style>

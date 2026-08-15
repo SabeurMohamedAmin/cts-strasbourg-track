@@ -38,9 +38,10 @@ function iconColors(index: number) {
 </script>
 
 <template>
-  <div class="direction-toggles rounded-lg pa-0" role="radiogroup" aria-label="Choisir une direction">
-    <v-btn
-      v-for="(headsign, index) in directions"
+  <div class="direction-toggles rounded-lg pa-0"
+    role="radiogroup"
+    aria-label="Choisir une direction">
+    <v-btn v-for="(headsign, index) in directions"
       :key="headsign"
       variant="plain"
       type="button"
@@ -49,18 +50,15 @@ function iconColors(index: number) {
       :class="{ 'direction-toggle--active': model === index }"
       :aria-checked="model === index"
       :aria-label="`Direction ${headsign}`"
-      @click="model = index"
-    >
-      <SwapDirectionIcon
-        :direction="index === 0 ? 'right' : 'left'"
+      @click="model = index">
+      <SwapDirectionIcon :direction="index === 0 ? 'right' : 'left'"
         :active-color="iconColors(index).active"
         :inactive-color="iconColors(index).inactive"
-        :size="24"
-      />
+        :size="24" />
       <span class="direction-toggle__label text-break">
         {{ headsign }}
       </span>
-  </v-btn>
+    </v-btn>
   </div>
 </template>
 
@@ -72,6 +70,7 @@ function iconColors(index: number) {
   border: 1px solid rgba(var(--v-theme-on-surface), .1);
   background: rgba(var(--v-theme-surface), .58);
 }
+
 .direction-toggle {
   flex: 1;
   min-width: 0;
@@ -79,50 +78,61 @@ function iconColors(index: number) {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  min-height: 38px;
-  padding: 7px 10px;
+  min-height: 24px;
+  padding: 2px 4px;
   border: 0;
   color: rgba(var(--v-theme-on-surface), .62);
   background: transparent;
   cursor: pointer;
   transition: background .2s ease, color .2s ease, transform .12s ease;
 }
-.direction-toggle:active { transform: scale(.97); }
+
+.direction-toggle:active {
+  transform: scale(.97);
+}
 
 .direction-toggle__label {
   /* Allow wrapping instead of forcing single line */
   min-width: 0;
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;       /* clamp to 2 lines, ellipsis if a 3rd would appear */
+  -webkit-line-clamp: 2;
+  /* clamp to 2 lines, ellipsis if a 3rd would appear */
   line-clamp: 2;
 
-  white-space: normal;          /* override any nowrap */
+  white-space: normal;
+  /* override any nowrap */
   overflow: hidden;
   text-overflow: ellipsis;
 
   word-break: break-word;
   overflow-wrap: break-word;
-  hyphens: auto;                /* breaks long French words like "l'Entreprise" cleanly */
+  hyphens: auto;
+  /* breaks long French words like "l'Entreprise" cleanly */
   text-align: center;
   line-height: 1;
 
   /* Reserve space for 2 lines so buttons in the same row stay aligned */
-  min-height: calc(1.2em * 2);
-  display: flex;                /* fallback if line-clamp unsupported */
+  display: flex;
+  /* fallback if line-clamp unsupported */
   align-items: center;
   justify-content: center;
 }
+
 .direction-toggle--active {
   color: rgba(var(--v-theme-on-surface), .95);
   background: rgba(var(--v-theme-primary), .12);
   box-shadow: inset 0 0 0 1px rgba(var(--v-theme-primary), .3);
 }
+
 .direction-toggle:focus-visible {
   outline: 3px solid rgb(var(--v-theme-primary));
   outline-offset: 3px;
 }
+
 @media (prefers-reduced-motion: reduce) {
-  .direction-toggle { transition: none; }
+  .direction-toggle {
+    transition: none;
+  }
 }
 </style>
