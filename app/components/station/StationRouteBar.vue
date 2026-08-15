@@ -180,7 +180,6 @@ watch(stopsKey, async () => {
         }"
         :title="stop.name"
         :aria-current="stop.isCurrent ? 'page' : undefined"
-        :style="{ '--i': Math.min(index, 12) }"
       >
         <span class="stop__dot" aria-hidden="true" />
         <span class="stop__label">{{ stop.name }}</span>
@@ -257,22 +256,6 @@ watch(stopsKey, async () => {
   scroll-snap-align: center;
   text-decoration: none;
   color: inherit;
-  /* Stops are re-created when the line, direction or station changes (their
-     :key changes), so this replays as a short cascade. --i is capped by the
-     template to keep the last stops from lagging behind. */
-  animation: stop-in .28s ease both;
-  animation-delay: calc(var(--i, 0) * 14ms);
-}
-
-@keyframes stop-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
 }
 
 /* Connecting line: each stop draws its own segment, at the dot center. A single
@@ -366,9 +349,6 @@ watch(stopsKey, async () => {
 @media (prefers-reduced-motion: reduce) {
   .stop__dot::before {
     transition: none;
-  }
-  .stop {
-    animation: none;
   }
 }
 </style>
