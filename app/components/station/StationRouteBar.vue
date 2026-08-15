@@ -100,6 +100,9 @@ watch(stopsKey, async () => {
       aria-label="Liste des arrêts, défilement horizontal"
       @scroll.passive="refreshArrows"
     >
+      <!-- NuxtLink prefetches on visibility by default, and Nuxt then downloads
+           the timetable of that station too (plugins/prefetch-station.client.ts),
+           so clicking a visible dot shows it right away. -->
       <component
         :is="isLink(stop) ? NuxtLink : 'span'"
         v-for="(stop, index) in stops"
