@@ -168,8 +168,6 @@ watch(stopsKey, async () => {
       aria-label="Liste des arrêts, défilement horizontal"
       @scroll.passive="updateArrows"
     >
-      <div class="route-bar__line" aria-hidden="true" />
-
       <component
         :is="stop.slug && !stop.isCurrent ? NuxtLink : 'span'"
         v-for="(stop, index) in stops"
@@ -248,18 +246,6 @@ watch(stopsKey, async () => {
   border-radius: 8px;
 }
 
-/* Connecting line, at the vertical center of the dots */
-.route-bar__line {
-  position: absolute;
-  top: calc(var(--label-space) + 7px);
-  left: 8px;
-  right: var(--label-tail);
-  height: 2px;
-  background: var(--accent);
-  opacity: .3;
-  pointer-events: none;
-}
-
 /* ── One stop ── */
 .stop {
   position: relative;
@@ -272,8 +258,32 @@ watch(stopsKey, async () => {
   color: inherit;
 }
 
-/* 16px box so the small and the large dot share the same center */
+/* Connecting line: each stop draws its own segment, at the dot center. A single
+   absolute line would only cover the visible width of the scroller. */
+.stop::before {
+  content: '';
+  position: absolute;
+  top: 7px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent);
+  opacity: .3;
+  pointer-events: none;
+}
+
+/* The two termini keep the line inside the network */
+.stop:first-child::before {
+  left: 50%;
+}
+.stop:last-child::before {
+  right: 50%;
+}
+
+/* 16px box so the small and the large dot share the same center.
+   `relative` keeps the dot painted above its line segment. */
 .stop__dot {
+  position: relative;
   width: 16px;
   height: 16px;
   display: grid;
