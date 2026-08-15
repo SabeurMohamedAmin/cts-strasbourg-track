@@ -1,0 +1,7 @@
+{
+  "_comment": "Bounding box of the Eurométropole de Strasbourg — user-validated frame.",
+  "_source": "User-calibrated 2026-07-13, based on OSM relation 1443391",
+  "_crs": "WGS84 (EPSG:4326)",
+  "sw": [7.4097, 48.5214],
+  "ne": [7.9414, 48.7070]
+}

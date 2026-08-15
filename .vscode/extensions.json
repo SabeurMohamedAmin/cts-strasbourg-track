@@ -1,0 +1,12 @@
+{
+  // Extensions VS Code will recommend to anyone opening this project.
+  "recommendations": [
+    // Official Vuetify extension: snippets (v-btn, v-card...), docs on hover, project commands
+    "vuetifyjs.vuetify-vscode",
+    // Official Vue language support (required for .vue single file components)
+    "Vue.volar",
+    // Helpful linting/formatting for a junior-friendly codebase
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode"
+  ]
+}

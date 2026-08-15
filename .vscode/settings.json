@@ -1,0 +1,19 @@
+{
+  // Make Vuetify snippets appear as soon as you type "v-" inside templates
+  "editor.quickSuggestions": {
+    "strings": true
+  },
+  "editor.suggest.showSnippets": true,
+
+  // Consistent, automatic formatting so juniors never worry about style
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+
+  // Use the Vue language server for .vue single file components
+  "files.associations": {
+    "*.vue": "vue"
+  },
+
+  // Keep TypeScript versions consistent with the project dependencies
+  "typescript.tsdk": "node_modules/typescript/lib"
+}

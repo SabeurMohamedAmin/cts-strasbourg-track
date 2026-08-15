@@ -1,0 +1,6 @@
+from_leg_group_id,to_leg_group_id,transfer_count,duration_limit,duration_limit_type,fare_transfer_type
+aller_simple,aller_simple,-1,3600,1,0
+journalier,journalier,-1,86400,1,0
+72h,72h,-1,259200,1,0
+abonnement,abonnement,-1,,,0
+gratuit_enfants_moins_4,gratuit_enfants_moins_4,-1,,,0

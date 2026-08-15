@@ -1,0 +1,6 @@
+fare_media_id,fare_media_name,fare_media_type
+badgeo,Badgéo,2
+bsc,BSC,1
+op,,3
+app,Appli CTS,4
+sans_titre,Sans titre de transport,0

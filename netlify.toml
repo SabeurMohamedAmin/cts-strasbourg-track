@@ -1,0 +1,42 @@
+# Netlify deployment configuration for the Nuxt 4 SSR application.
+#
+# `pnpm run build` runs `nuxt build`. In the current Nuxt/Nitro Netlify
+# build used by this project, Nitro reports:
+#
+#   [nitro] Generated public dist
+#
+# Netlify serves static assets from `dist`, including:
+#   - /_nuxt/* compiled JavaScript and CSS
+#   - public/ assets copied by Nuxt
+#   - PWA files such as /sw.js and /workbox-*.js
+#
+# Nitro automatically detects the Netlify build environment and produces
+# the SSR function bundle in `.netlify/functions-internal`.
+# Netlify packages that directory automatically; it is not the publish
+# directory and must not be configured here.
+#
+# Do not set `NITRO_PRESET` manually. Nuxt detects Netlify automatically.
+# Do not add a blanket redirect to `/.netlify/functions/__nitro`; this
+# project’s generated function output is managed by the Nuxt/Nitro
+# Netlify integration, not by a manually maintained function path.
+#
+# Required environment variables should be configured in:
+# Netlify project configuration -> Environment variables
+#
+#   NUXT_DATABASE_URL                       Postgres connection string
+#   NUXT_DATABASE_SSL_REJECT_UNAUTHORIZED   Database TLS setting, if needed
+#   NUXT_CTS_API_REST                       CTS API base URL, if used
+#   NUXT_CTS_API_TOKEN                      CTS realtime API token
+#   NUXT_POLL_INTERVAL_MS                   Optional polling interval
+#   NUXT_PUBLIC_MAP_STYLE_URL                Optional light map style URL
+#   NUXT_PUBLIC_MAP_STYLE_DARK_URL           Optional dark map style URL
+#
+# Variables beginning with `NUXT_PUBLIC_` are exposed to browser code.
+# Never store secrets in variables with that prefix.
+
+[build]
+  command = "pnpm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"

@@ -1,0 +1,69 @@
+# CI pipeline — Phase 0, Step 0.2 of the refactoring roadmap.
+#
+#   install → lint → typecheck → unit tests → build
+#
+# Every refactoring step must keep this pipeline green before merging.
+
+image: node:22
+
+stages:
+  - lint
+  - test
+  - build
+
+default:
+  interruptible: true
+  before_script:
+    - npm install --global pnpm@10
+    - pnpm config set store-dir .pnpm-store
+    # TODO: switch to `pnpm install --frozen-lockfile` once pnpm-lock.yaml
+    # has been regenerated with the new dev dependencies
+    # (run `pnpm install` locally and commit the lockfile).
+    - pnpm install --no-frozen-lockfile
+  cache:
+    key:
+      files:
+        - pnpm-lock.yaml
+    paths:
+      - .pnpm-store
+
+lint:
+  stage: lint
+  script:
+    - pnpm lint
+
+typecheck:
+  stage: lint
+  script:
+    - pnpm typecheck
+
+unit-tests:
+  stage: test
+  script:
+    - pnpm test:coverage
+  # Extracts the "All files" percentage from the vitest text reporter.
+  coverage: '/All files[^|]*\|\s*([\d.]+)/'
+  artifacts:
+    when: always
+    expire_in: 30 days
+    paths:
+      - coverage/
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/cobertura-coverage.xml
+
+# E2E suites need Playwright browsers and live data — run on demand.
+e2e-tests:
+  stage: test
+  rules:
+    - when: manual
+  allow_failure: true
+  script:
+    - npx playwright install --with-deps chromium
+    - pnpm test:e2e
+
+build:
+  stage: build
+  script:
+    - pnpm build
