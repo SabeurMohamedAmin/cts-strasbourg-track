@@ -51,6 +51,17 @@ const directionLabels = computed(() => currentLine.value?.directions.map(d => d.
 const currentDirection = computed(() => currentLine.value?.directions[selectedDirection.value] ?? null)
 
 
+// Stops of the selected direction, flagged for the route bar. Building them in
+// a computed (instead of inline in the template) keeps the array stable, so the
+// bar only re-measures and re-centers when the line or direction changes.
+const routeBarStops = computed(() =>
+  (currentDirection.value?.stops ?? []).map(stop => ({
+    ...stop,
+    isCurrent: stop.slug === stationSlug.value,
+  })),
+)
+
+
 const now = ref(new Date())
 let clockTimer: ReturnType<typeof setInterval> | undefined
 onMounted(() => { clockTimer = setInterval(() => { now.value = new Date() }, 60_000) })
@@ -214,13 +225,11 @@ useHead({ title: () => schedule.value ? `Horaires — ${schedule.value.stopName}
           </template>
 
           <!-- ── Route bar ── -->
-          <template v-if="currentDirection?.stops?.length">
+          <template v-if="routeBarStops.length">
             <v-divider class="mt-3" />
             <station-route-bar
-              :stops="currentDirection.stops.map(s => ({
-                ...s,
-                isCurrent: s.slug === stationSlug
-              }))"
+              :stops="routeBarStops"
+              :line-color="currentLine?.routeColor"
               class="mt-1"
             />
           </template>
