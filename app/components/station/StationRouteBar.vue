@@ -38,15 +38,12 @@ watch(stopsKey, () => centerCurrent(true), { flush: 'post' })
 </script>
 
 <template>
-  <div
-    v-if="stops.length"
+  <div v-if="stops.length"
     class="route-bar"
     role="navigation"
     aria-label="Arrêts desservis"
-    :style="{ '--accent': accent }"
-  >
-    <v-btn
-      v-if="isScrollable"
+    :style="{ '--accent': accent }">
+    <v-btn v-if="isScrollable"
       class="route-bar__arrow"
       icon="mdi-chevron-left"
       variant="tonal"
@@ -54,34 +51,29 @@ watch(stopsKey, () => centerCurrent(true), { flush: 'post' })
       size="small"
       :disabled="!canScrollBack"
       aria-label="Arrêts précédents"
-      @click="scrollStops(-1)"
-    />
+      @click="scrollStops(-1)" />
 
-    <div
-      ref="track"
+    <div ref="track"
       class="route-bar__track"
       tabindex="0"
       aria-label="Liste des arrêts, défilement horizontal"
-      @scroll.passive="updateArrows"
-    >
+      @scroll.passive="updateArrows">
       <!-- NuxtLink prefetches the dots entering the viewport, and Nuxt then
            caches their timetable too (plugins/prefetch-station.client.ts). -->
-      <NuxtLink
-        v-for="(stop, index) in stops"
+      <NuxtLink v-for="(stop, index) in stops"
         :key="`${stop.slug}-${index}`"
         :to="`/station/${stop.slug}`"
         class="stop"
         :class="{ 'stop--current': stop.isCurrent }"
         :title="stop.name"
-        :aria-current="stop.isCurrent ? 'page' : undefined"
-      >
-        <span class="stop__dot" aria-hidden="true" />
+        :aria-current="stop.isCurrent ? 'page' : undefined">
+        <span class="stop__dot"
+          aria-hidden="true" />
         <span class="stop__label">{{ stop.name }}</span>
       </NuxtLink>
     </div>
 
-    <v-btn
-      v-if="isScrollable"
+    <v-btn v-if="isScrollable"
       class="route-bar__arrow"
       icon="mdi-chevron-right"
       variant="tonal"
@@ -89,8 +81,7 @@ watch(stopsKey, () => centerCurrent(true), { flush: 'post' })
       size="small"
       :disabled="!canScrollForward"
       aria-label="Arrêts suivants"
-      @click="scrollStops(1)"
-    />
+      @click="scrollStops(1)" />
   </div>
 </template>
 
@@ -103,11 +94,11 @@ watch(stopsKey, () => centerCurrent(true), { flush: 'post' })
       space = max * sin(angle) + line-height + 4px  ->  96 * 0.57 + 14 + 4
       tail  = max * cos(angle) - width / 2          ->  96 * 0.82 - 36
   */
-  --label-angle: -35deg;
+  --label-angle: -45deg;
   --label-max: 96px;
   --label-space: 72px;
   --label-tail: 44px;
-  --stop-width: 72px;
+  --stop-width: 38px;
 
   display: flex;
   align-items: flex-start;
@@ -122,6 +113,7 @@ watch(stopsKey, () => centerCurrent(true), { flush: 'post' })
   margin-top: calc(var(--label-space) - 6px);
   opacity: .75;
 }
+
 .route-bar__arrow:hover {
   opacity: 1;
 }
@@ -141,9 +133,11 @@ watch(stopsKey, () => centerCurrent(true), { flush: 'post' })
   padding-bottom: 8px;
   padding-inline: 8px var(--label-tail);
 }
+
 .route-bar__track::-webkit-scrollbar {
   display: none;
 }
+
 .route-bar__track:focus-visible {
   border-radius: 8px;
   outline: 2px solid rgb(var(--v-theme-primary));
@@ -174,9 +168,11 @@ watch(stopsKey, () => centerCurrent(true), { flush: 'post' })
   background: var(--accent);
   opacity: .3;
 }
+
 .stop:first-child::before {
   left: 50%;
 }
+
 .stop:last-child::before {
   right: 50%;
 }
@@ -189,6 +185,7 @@ watch(stopsKey, () => centerCurrent(true), { flush: 'post' })
   width: 16px;
   height: 16px;
 }
+
 .stop__dot::before {
   content: '';
   width: 10px;
@@ -198,11 +195,13 @@ watch(stopsKey, () => centerCurrent(true), { flush: 'post' })
   box-shadow: 0 0 0 2px rgb(var(--v-theme-surface));
   transition: width .2s ease, height .2s ease, background .2s ease;
 }
+
 .stop:hover .stop__dot::before {
   width: 12px;
   height: 12px;
   background: rgb(var(--v-theme-primary));
 }
+
 .stop--current .stop__dot::before {
   width: 14px;
   height: 14px;
@@ -226,9 +225,11 @@ watch(stopsKey, () => centerCurrent(true), { flush: 'post' })
   color: rgba(var(--v-theme-on-surface), .68);
   pointer-events: none;
 }
+
 .stop:hover .stop__label {
   color: rgb(var(--v-theme-primary));
 }
+
 .stop--current .stop__label {
   color: rgb(var(--v-theme-on-surface));
   font-weight: 700;
@@ -238,9 +239,11 @@ watch(stopsKey, () => centerCurrent(true), { flush: 'post' })
 .stop:focus-visible {
   outline: none;
 }
+
 .stop:focus-visible .stop__dot::before {
   box-shadow: 0 0 0 3px rgb(var(--v-theme-primary));
 }
+
 .stop:focus-visible .stop__label {
   color: rgb(var(--v-theme-primary));
   text-decoration: underline;
