@@ -6,9 +6,16 @@
  *   const { arrivals } = useStopArrivals(stopId, { limit: 30, window: 240 })
  *
  * The composable:
- *   - Fetches immediately when stopId becomes non-null.
+ *   - Fetches in the BROWSER only, as soon as stopId is non-null.
  *   - Re-fetches every 30 seconds while a stop is selected.
  *   - Cleans up the interval on component unmount.
+ *
+ * Why browser-only (`server: false`):
+ * arrivals are real-time and go stale within seconds, so server-rendering them
+ * brings nothing. It also used to break hydration: the fetch was started from a
+ * watcher, i.e. after the HTML was rendered but before the payload was
+ * serialized, so the server sent "no live data" markup together with a payload
+ * full of live arrivals, and the first client render disagreed with the DOM.
  */
 import type { StopArrivalsResponse } from '~~/shared/types/stop'
 
@@ -27,22 +34,25 @@ export function useStopArrivals(stopId: MaybeRef<string | null>, options: StopAr
     {
       immediate: false,
       watch: false,
+      server: false,
       query: { limit: options.limit ?? 10, window: options.window ?? 90 },
     },
   )
 
-  // Trigger a fresh fetch whenever the selected stop changes.
-  watch(id, async (newId) => {
-    if (newId) await refresh()
-  }, { immediate: true })
+  if (import.meta.client) {
+    // Trigger a fresh fetch whenever the selected stop changes.
+    watch(id, async (newId) => {
+      if (newId) await refresh()
+    }, { immediate: true })
 
-  // Keep a 30-second polling interval while a stop is active.
-  let timer: ReturnType<typeof setInterval> | null = null
-  watch(id, (newId) => {
-    if (timer) clearInterval(timer)
-    if (newId) timer = setInterval(refresh, 30_000)
-  })
-  onUnmounted(() => { if (timer) clearInterval(timer) })
+    // Keep a 30-second polling interval while a stop is active.
+    let timer: ReturnType<typeof setInterval> | null = null
+    watch(id, (newId) => {
+      if (timer) clearInterval(timer)
+      if (newId) timer = setInterval(refresh, 30_000)
+    }, { immediate: true })
+    onUnmounted(() => { if (timer) clearInterval(timer) })
+  }
 
   return {
     arrivals: computed(() => data.value?.arrivals ?? []),

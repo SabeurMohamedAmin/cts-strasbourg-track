@@ -62,9 +62,16 @@ const routeBarStops = computed(() =>
 )
 
 
-const now = ref(new Date())
+// Clock behind the theoretical departure times. Its first value travels through
+// the payload so the server render and the hydration share the SAME instant:
+// calling `new Date()` on both sides makes the two renders disagree by a few
+// seconds, which is enough to shift a departure by one minute.
+const now = useState('station-clock', () => new Date())
 let clockTimer: ReturnType<typeof setInterval> | undefined
-onMounted(() => { clockTimer = setInterval(() => { now.value = new Date() }, 60_000) })
+onMounted(() => {
+  now.value = new Date()
+  clockTimer = setInterval(() => { now.value = new Date() }, 60_000)
+})
 onUnmounted(() => clearInterval(clockTimer))
 
 
