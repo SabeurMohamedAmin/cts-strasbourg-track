@@ -20,10 +20,29 @@ const stationSlug = computed(() => String(route.params.slug ?? ''))
 // `lazy: true` keeps client-side navigation instant: the page shell and a
 // loading state render immediately while the timetable downloads. Initial
 // server-rendered visits still wait for the data (SEO unaffected).
-const { data: schedule, error: scheduleError } = await useFetch<StopScheduleResponse>(
+const { data: incomingSchedule, error: scheduleError, status: scheduleStatus } = await useFetch<StopScheduleResponse>(
   () => `/api/stations/${encodeURIComponent(stationSlug.value)}/schedule`,
   { lazy: true },
 )
+
+
+/**
+ * Station currently displayed.
+ *
+ * `useFetch` resets its `data` to null the moment the URL changes, so walking to
+ * the next station emptied the page for a few frames: the whole layout collapsed
+ * to the loading spinner, which reads as a white flash and moves the scroll
+ * position. Holding the last loaded station here means the page only ever
+ * swaps content in place.
+ */
+const schedule = ref<StopScheduleResponse | null>(null)
+watch(incomingSchedule, (value) => {
+  if (value) schedule.value = value
+}, { immediate: true })
+
+
+/** The next station is downloading while the previous one is still on screen. */
+const isSwitching = computed(() => scheduleStatus.value === 'pending')
 
 
 const stopId = computed(() => schedule.value?.stopId ?? null)
@@ -174,8 +193,23 @@ useHead({ title: () => schedule.value ? `Horaires — ${schedule.value.stopName}
 
 
       <!-- ── Station card ── -->
-      <section class="station-section px-2 station-section-sticky" aria-labelledby="station-name">
+      <section
+        class="station-section px-2 station-section-sticky"
+        aria-labelledby="station-name"
+        :aria-busy="isSwitching"
+      >
         <v-card rounded="lg" variant="flat" elevation="0" class="pa-4 station-section-card">
+          <!-- Switching station: the previous one stays readable, this only
+               signals that the next one is on its way. -->
+          <v-progress-linear
+            v-if="isSwitching"
+            class="mb-2"
+            color="primary"
+            height="2"
+            rounded
+            indeterminate
+          />
+
           <!-- Name + favourite -->
           <div class="d-flex align-center justify-start gap-3 mb-2">
             <v-card-title id="station-name" class="px-0">
