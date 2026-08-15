@@ -15,6 +15,11 @@ export interface ScheduleHourRow {
   minutes: number[]
 }
 
+export interface StopOnRoute {
+  name: string
+  slug: string
+}
+
 /** One travel direction of a line (grouped by GTFS direction_id). */
 export interface ScheduleDirection {
   /** GTFS direction_id: 0 = outbound, 1 = return. */
@@ -27,6 +32,7 @@ export interface ScheduleDirection {
   /** Every terminus served in this direction, used to match live arrivals. */
   headsigns: string[]
   hours: ScheduleHourRow[]
+  stops?: StopOnRoute[]
 }
 
 /** Full-day theoretical timetable of one line at the station. */
@@ -52,4 +58,5 @@ export interface StopScheduleResponse {
   /** Service date, ISO YYYY-MM-DD (Europe/Paris). */
   date: string
   lines: ScheduleLine[]
+  stops?: StopOnRoute[]
 }

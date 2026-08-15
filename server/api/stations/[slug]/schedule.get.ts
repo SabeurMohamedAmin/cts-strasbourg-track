@@ -29,7 +29,7 @@
 import { parisClock } from '~~/server/services/simulation/gtfs-time'
 import { getDaySchedule, type TripStopEvent } from '~~/server/services/simulation/schedule-cache'
 import { getAllStops } from '~~/server/services/stops-cache'
-import type { ScheduleLine, StopScheduleResponse } from '~~/shared/types/schedule'
+import type { ScheduleLine, StopOnRoute, StopScheduleResponse } from '~~/shared/types/schedule'
 import { slugifyStopName } from '~~/shared/utils/slug'
 
 type StopRow = Awaited<ReturnType<typeof getAllStops>>[number]
@@ -63,6 +63,8 @@ interface DirectionDraft {
   headsignCounts: Map<string, number>
   /** hour → departure minutes. */
   hours: Map<number, Set<number>>
+  /** Ordered stop events of the longest trip for building route stops bar. */
+  longestTripEvents?: TripStopEvent[]
 }
 
 /** Working shape while trips are aggregated: direction_id → hours. */
@@ -149,6 +151,10 @@ export default defineEventHandler(async (event): Promise<StopScheduleResponse> =
     }
     direction.headsignCounts.set(trip.headsign, (direction.headsignCounts.get(trip.headsign) ?? 0) + 1)
 
+    if (!direction.longestTripEvents || trip.events.length > direction.longestTripEvents.length) {
+      direction.longestTripEvents = trip.events
+    }
+
     // Riders read timetables as departure times. Hours may reach 24-25 for
     // after-midnight trips, keeping those rows sorted after 23h.
     const hour = Math.floor(stopEvent.departureSec / 3600)
@@ -173,6 +179,17 @@ export default defineEventHandler(async (event): Promise<StopScheduleResponse> =
           const headsigns = [...direction.headsignCounts.entries()]
             .sort((a, b) => b[1] - a[1])
             .map(([headsign]) => headsign)
+
+          const stops: StopOnRoute[] = []
+          if (direction.longestTripEvents) {
+            for (const event of direction.longestTripEvents) {
+              const stopSlug = slugifyStopName(event.stopName)
+              if (!stops.length || stops[stops.length - 1]!.slug !== stopSlug) {
+                stops.push({ name: event.stopName, slug: stopSlug })
+              }
+            }
+          }
+
           return {
             directionId,
             headsign: headsigns[0] ?? '',
@@ -180,6 +197,7 @@ export default defineEventHandler(async (event): Promise<StopScheduleResponse> =
             hours: [...direction.hours.entries()]
               .map(([hour, minutes]) => ({ hour, minutes: [...minutes].sort((a, b) => a - b) }))
               .sort((a, b) => a.hour - b.hour),
+            stops,
           }
         })
         .sort((a, b) => a.directionId - b.directionId),

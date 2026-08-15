@@ -2,6 +2,7 @@
 import StationDirectionToggle from '~/components/station/StationDirectionToggle.vue'
 import StationLineToggles from '~/components/station/StationLineToggles.vue'
 import StationNextDepartures from '~/components/station/StationNextDepartures.vue'
+import StationRouteBar from '~/components/station/StationRouteBar.vue'
 import StationTimetable from '~/components/station/StationTimetable.vue'
 import FavoriteListPicker from '~/components/stops/FavoriteListPicker.vue'
 import { useStopArrivals } from '~/composables/useStopArrivals'
@@ -209,6 +210,18 @@ useHead({ title: () => schedule.value ? `Horaires — ${schedule.value.stopName}
               v-model="selectedDirection"
               :directions="directionLabels"
               aria-label="Choisir la direction"
+            />
+          </template>
+
+          <!-- ── Route bar ── -->
+          <template v-if="currentDirection?.stops?.length">
+            <v-divider class="mt-3" />
+            <station-route-bar
+              :stops="currentDirection.stops.map(s => ({
+                ...s,
+                isCurrent: s.slug === stationSlug
+              }))"
+              class="mt-1"
             />
           </template>
         </v-card>
