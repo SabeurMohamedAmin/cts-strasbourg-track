@@ -171,7 +171,7 @@ function getStopEventIndex(schedule: DaySchedule): Map<string, StopEventEntry[]>
   return index
 }
 
-export default defineEventHandler(async (event): Promise<StopArrivalsResponse> => {
+export default defineEventHandler(async (event): Promise<StopArrivalsResponse | undefined> => {
   const stopId = getRouterParam(event, 'id')
   if (!stopId) throw createError({ statusCode: 400, message: 'stopId requis' })
 
