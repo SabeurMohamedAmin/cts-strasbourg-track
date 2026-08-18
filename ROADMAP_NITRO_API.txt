@@ -162,23 +162,36 @@ STEP 7 - FLUTTER HANDSHAKE
 ----------------------------------------------------------------
 STEP 8 - PARITY & MOBILE-PLUS FEATURES (backend)
 ----------------------------------------------------------------
-[ ] 8.1  Public blog read API in v1: GET /api/v1/blog and
+[x] 8.1  Public blog read API in v1: GET /api/v1/blog and
          /api/v1/blog/[slug] (published only, ?locale=fr) -
          same frozen-contract rule as transit endpoints
-[ ] 8.2  Disruptions: table + GET /api/v1/disruptions
+         Done 2026-08-18: existing /api/blog handlers are reachable under
+         /api/v1 via the alias; documented in docs/openapi.yaml.
+[x] 8.2  Disruptions: table + GET /api/v1/disruptions
          (admin CRUD reuses the admin shell - see ADMIN roadmap
          Phase 11)
-[ ] 8.3  Device registration: POST /api/v1/devices
+         Done 2026-08-18: disruptions table (migration 0005) +
+         server/api/disruptions.get.ts (current/upcoming, critical first,
+         ETag + short cache). Admin CRUD still to build in the admin shell.
+[x] 8.3  Device registration: POST /api/v1/devices
          (FCM token, platform android|ios, favorite line ids)
+         Done 2026-08-18: devices table (migration 0005) +
+         server/api/devices.post.ts (idempotent upsert on fcm_token).
 [ ] 8.4  Push sender service (server-side FCM; key in
          runtimeConfig, never in clients). Web push (VAPID)
          shares the same disruptions source.
-[ ] 8.5  Widget endpoint: GET /api/v1/stops/:id/next-departures
+         TODO: needs an FCM server key + a send trigger (on new disruption).
+[x] 8.5  Widget endpoint: GET /api/v1/stops/:id/next-departures
          (tiny payload, aggressive Cache-Control - home-screen widget)
-[ ] 8.6  Favorites: DECISION - v1 = local-only on both clients
+         Done 2026-08-18: server/api/stops/[id]/next-departures.get.ts
+         projects the full arrivals merge down to a compact payload.
+[x] 8.6  Favorites: DECISION - v1 = local-only on both clients
          (web localStorage / Flutter Hive); server sync = v2
-[ ] 8.7  Analytics: POST /api/v1/track accepts mobile events
+         Recorded 2026-08-18: no server work in v1.
+[x] 8.7  Analytics: POST /api/v1/track accepts mobile events
          (X-App-Token) with platform dimension web|android|ios
+         Done 2026-08-18: server/api/track.post.ts validates + logs (202).
+         Persistence/forwarding to an analytics backend is a later step.
 
 ----------------------------------------------------------------
 RULES
