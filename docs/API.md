@@ -393,3 +393,22 @@ Accept a product analytics event. Never blocks the app.
 - **Conditional GET (5.2)**: `/vehicles`, `/stops/:id/arrivals`,
   `/stops/:id/next-departures` and `/disruptions` send a strong `ETag` and
   answer `304 Not Modified` to a matching `If-None-Match`.
+- **Compression (5.3)**: JSON responses are gzip/brotli-compressed by the
+  Nitro `node-server` runtime when the client sends `Accept-Encoding`.
+
+---
+
+## Real-time strategy for mobile (Step 4)
+
+- **SSE stream** `/api/v1/stream/vehicles`: `event: vehicles` (full snapshot
+  replacement) on connect then every tick; `event: heartbeat` every 20 s so a
+  mobile client detects a dropped connection. Events carry an `id:`.
+- **Reconnect (4.4)**: on reconnect, send `Last-Event-ID: <last id>`; the
+  server replays missed snapshots from its in-memory buffer.
+- **Polling fallback (4.3)**: when SSE is unreliable (mobile networks, Doze),
+  poll `GET /api/v1/vehicles` — it returns the same `VehicleSnapshot` as one
+  SSE frame, with `Cache-Control: max-age=5` and ETag support.
+- **Arrivals refresh (4.5)**: poll `GET /api/v1/stops/:id/arrivals` every
+  **30 s** while the stop is on screen. Live CTS data has a 500 ms server
+  budget; scheduled times fill in immediately and upgrade to live on the next
+  poll, so polling faster than ~15 s only wastes quota.
