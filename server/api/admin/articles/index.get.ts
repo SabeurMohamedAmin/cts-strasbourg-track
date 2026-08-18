@@ -32,10 +32,28 @@ export default defineEventHandler(async (event): Promise<AdminArticleList> => {
   if (query.search) conditions.push(ilike(blogArticleTranslations.title, `%${query.search}%`))
   const where = conditions.length > 0 ? and(...conditions) : undefined
 
-  // Same join chain for the page of rows and for the total count.
-  const joinedFrom = <T extends Record<string, unknown>>(selection: T) =>
+  // Shared join chain for the page of rows and for the total count.
+  const baseJoin = () => db
+    .select()
+    .from(blogArticles)
+    .innerJoin(blogArticleTranslations, and(
+      eq(blogArticleTranslations.articleId, blogArticles.id),
+      eq(blogArticleTranslations.locale, DEFAULT_LOCALE),
+    ))
+    .innerJoin(blogCategories, eq(blogCategories.id, blogArticles.categoryId))
+    .innerJoin(blogCategoryTranslations, and(
+      eq(blogCategoryTranslations.categoryId, blogCategories.id),
+      eq(blogCategoryTranslations.locale, DEFAULT_LOCALE),
+    ))
+    .where(where)
+
+  const [itemRows, totalRows] = await Promise.all([
+    baseJoin()
+      .orderBy(desc(blogArticles.publishedAt))
+      .limit(query.perPage)
+      .offset((query.page - 1) * query.perPage),
     db
-      .select(selection)
+      .select({ total: count() })
       .from(blogArticles)
       .innerJoin(blogArticleTranslations, and(
         eq(blogArticleTranslations.articleId, blogArticles.id),
@@ -46,27 +64,22 @@ export default defineEventHandler(async (event): Promise<AdminArticleList> => {
         eq(blogCategoryTranslations.categoryId, blogCategories.id),
         eq(blogCategoryTranslations.locale, DEFAULT_LOCALE),
       ))
-      .where(where)
-
-  const [items, totals] = await Promise.all([
-    joinedFrom({
-      slug: blogArticles.slug,
-      title: blogArticleTranslations.title,
-      categorySlug: blogCategories.slug,
-      categoryName: blogCategoryTranslations.name,
-      status: blogArticles.status,
-      publishedAt: blogArticles.publishedAt,
-      readingMinutes: blogArticles.readingMinutes,
-    })
-      .orderBy(desc(blogArticles.publishedAt))
-      .limit(query.perPage)
-      .offset((query.page - 1) * query.perPage),
-    joinedFrom({ total: count() }),
+      .where(where),
   ])
+
+  const items: AdminArticleList['items'] = itemRows.map(row => ({
+    slug: row.blog_articles.slug,
+    title: row.blog_article_translations.title,
+    categorySlug: row.blog_categories.slug,
+    categoryName: row.blog_category_translations.name,
+    status: row.blog_articles.status,
+    publishedAt: row.blog_articles.publishedAt,
+    readingMinutes: row.blog_articles.readingMinutes,
+  }))
 
   return {
     items,
-    total: totals[0]?.total ?? 0,
+    total: totalRows[0]?.total ?? 0,
     page: query.page,
     perPage: query.perPage,
   }
