@@ -8,6 +8,8 @@ import * as tripsSchema from './schema/trips'
 import * as stopTimesSchema from './schema/stop_times'
 import * as calendarSchema from './schema/calendar'
 import * as blogSchema from './schema/blog'
+import * as disruptionsSchema from './schema/disruptions'
+import * as devicesSchema from './schema/devices'
 
 /**
  * useRuntimeConfig() is only available inside Nitro event handlers.
@@ -33,6 +35,8 @@ const schema = {
   ...stopTimesSchema,
   ...calendarSchema,
   ...blogSchema,
+  ...disruptionsSchema,
+  ...devicesSchema,
 }
 
 function createDb() {

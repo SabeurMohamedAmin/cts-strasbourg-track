@@ -118,6 +118,11 @@ export default defineNuxtConfig({
     cloudinaryFolder: 'blog',
     ctsApiToken: '',
     ctsApiBaseUrl: 'https://api.cts-strasbourg.eu',
+    // Lightweight shared secret identifying the mobile app (ROADMAP_NITRO_API
+    // 3.3). When set, non-browser /api/v1/* requests must send it as the
+    // X-App-Token header. Empty = the check is disabled (local dev).
+    // NUXT_APP_TOKEN — server-side only, never exposed to clients.
+    appToken: '',
     pollIntervalMs: 12000,
     // EstimatedTimetable can be a large response. Keep this longer than the
     // normal polling cadence; the poller skips ticks while a fetch is active.
