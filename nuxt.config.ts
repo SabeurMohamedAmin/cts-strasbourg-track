@@ -67,19 +67,9 @@ export default defineNuxtConfig({
     '/admin/**': { headers: { 'X-Robots-Tag': 'noindex, nofollow' } },
     '/api/admin/**': { headers: { 'X-Robots-Tag': 'noindex, nofollow' } },
 
-    /**
-     * Public v1 alias (ROADMAP_NITRO_API 2.4): /api/v1/<endpoint> is served
-     * by the unversioned handler, so web and Flutter share one implementation.
-     *
-     * This used to be a URL rewrite in server/middleware/api-version.ts, but
-     * Nitro's route matcher ignores a path rewritten from middleware, so every
-     * /api/v1/* request answered 404. The route rule is the supported way and
-     * works for every method plus the SSE stream.
-     *
-     * /api/v1/admin/** is still rejected with 404 by api-version.ts, which
-     * runs before any route is resolved.
-     */
-    '/api/v1/**': { proxy: '/api/**' },
+    // The /api/v1 alias is NOT a route rule: a proxy hop cannot carry the SSE
+    // stream's raw res.write() output (it answered 204). It is implemented by
+    // one-line re-export handlers in server/api/v1/**.
   },
 
   vite: {

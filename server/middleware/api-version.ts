@@ -1,10 +1,14 @@
 /**
  * API version guard (ROADMAP #12, ROADMAP_NITRO_API 2.4).
  *
- * The /api/v1/<endpoint> → /api/<endpoint> aliasing itself is done by a route
- * rule in nuxt.config.ts ('/api/v1/**': { proxy: '/api/**' }). A URL rewrite
- * here does NOT work: Nitro's route matcher ignores a path rewritten from
- * middleware, which made every /api/v1/* request 404.
+ * The /api/v1/<endpoint> → /api/<endpoint> aliasing is done by thin re-export
+ * handlers in server/api/v1/** (one line each), so both paths share a single
+ * implementation and route natively.
+ *
+ * Two approaches were tried and removed: a URL rewrite here (Nitro's route
+ * matcher ignores a path rewritten from middleware — every request 404'd) and
+ * a routeRules proxy (the SSE handler writes to event.node.res directly, which
+ * a proxy hop cannot carry — the stream answered 204).
  *
  * What stays here, because only middleware runs before routing:
  *

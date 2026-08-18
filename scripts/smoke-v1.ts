@@ -186,12 +186,25 @@ async function main(): Promise<void> {
   // Ids and slugs come from the live data: no hard-coded fixtures to rot.
   interface SmokeStop { stopId: string, stopName: string }
   let station: SmokeStop | undefined
+  /** False when the feed has no location_type=1 rows and we used a platform. */
+  let haveRealStation = false
 
-  await check('GET /stops?type=station', async () => {
-    const stops = expectArray(await getJson('/stops?type=station'), '/stops') as SmokeStop[]
-    if (stops.length === 0) throw new Error('no stations returned (is the GTFS feed imported?)')
-    station = stops[0]
-    return `${stops.length} stations, first: ${station?.stopName}`
+  await check('GET /stops', async () => {
+    const stations = expectArray(await getJson('/stops?type=station'), '/stops?type=station') as SmokeStop[]
+    haveRealStation = stations.length > 0
+
+    // A GTFS feed without parent stations is valid, so fall back to platforms
+    // rather than reporting every stop endpoint as broken.
+    const platforms = haveRealStation
+      ? []
+      : expectArray(await getJson('/stops'), '/stops') as SmokeStop[]
+
+    station = stations[0] ?? platforms[0]
+    if (!station) throw new Error('no stops at all (is the GTFS feed imported?)')
+
+    return haveRealStation
+      ? `${stations.length} station(s), first: ${station.stopName}`
+      : `0 stations (location_type=1); using 1 of ${platforms.length} platform(s): ${station.stopName}`
   })
 
   if (!station) {
@@ -220,11 +233,16 @@ async function main(): Promise<void> {
       return `${Object.keys(body).length} stop(s) in the batch`
     })
 
-    await check('GET /stations/{slug}/schedule', async () => {
-      const slug = slugifyStopName(station!.stopName)
-      const body = await getJson<{ lines: unknown[] }>(`/stations/${slug}/schedule`)
-      return `slug '${slug}', ${body.lines.length} line(s)`
-    })
+    if (!haveRealStation) {
+      skip('GET /stations/{slug}/schedule', 'no location_type=1 station to resolve a slug from')
+    }
+    else {
+      await check('GET /stations/{slug}/schedule', async () => {
+        const slug = slugifyStopName(station!.stopName)
+        const body = await getJson<{ lines: unknown[] }>(`/stations/${slug}/schedule`)
+        return `slug '${slug}', ${body.lines.length} line(s)`
+      })
+    }
   }
 
   await check('GET /stops/nearby', async () => {
