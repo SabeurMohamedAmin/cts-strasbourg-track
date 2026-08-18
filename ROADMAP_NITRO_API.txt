@@ -106,9 +106,13 @@ STEP 3 - SECURITY & ACCESS CONTROL
 ----------------------------------------------------------------
 STEP 4 - REAL-TIME STRATEGY FOR MOBILE
 ----------------------------------------------------------------
-[ ] 4.1  Verify /api/stream/vehicles (SSE) works from a non-browser
+[~] 4.1  Verify /api/stream/vehicles (SSE) works from a non-browser
          client (curl test with long-lived connection)
-         TODO: needs a running server (local `pnpm dev` + curl -N).
+         Tooling done 2026-08-18: `pnpm api:smoke` (scripts/smoke-v1.ts)
+         opens the stream from Node and asserts an `event: vehicles` frame
+         plus an `event: heartbeat`; it also walks every other v1 endpoint
+         and checks the /vehicles ETag 304 (5.2). Flip to [x] after a green
+         run against `pnpm dev` (and again against staging for 7.2).
 [x] 4.2  Add heartbeat/keep-alive events so mobile detects drops
          Done: SSE stream emits `event: heartbeat` every 20 s
          (server/api/stream/vehicles.get.ts).
