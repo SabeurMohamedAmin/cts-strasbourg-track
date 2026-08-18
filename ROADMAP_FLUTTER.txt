@@ -1,0 +1,94 @@
+================================================================
+ CTS STRASBOURG TRACK - ROADMAP: WEB (NUXT 4) + MOBILE (FLUTTER)
+ Note: Flutter targets ANDROID / IOS ONLY. Web = Nuxt/Vuetify.
+ See ROADMAP_NITRO_API.txt for exposing the Nitro API to mobile.
+================================================================
+Legend:  [x] done   [~] in progress   [ ] todo
+
+----------------------------------------------------------------
+PHASE 0 - CURRENT STATE
+----------------------------------------------------------------
+[x] Nuxt 4 + Vuetify web app running
+[x] GTFS theoretical data available (Donnees theoriques)
+[x] Server layer exists (server/)
+[x] GitLab CI pipeline in place (.gitlab-ci.yml)
+[x] Mirrored on GitHub (SabeurMohamedAmin/cts-strasbourg-track)
+
+----------------------------------------------------------------
+PHASE 1 - FOUNDATION & SHARED API LAYER
+----------------------------------------------------------------
+[ ] 1.1  List every place the app calls CTS / GTFS data
+[ ] 1.2  Move ALL transit logic into Nitro server routes (server/api/)
+[ ] 1.3  Keep CTS API keys server-side only (.env, never in client)
+[ ] 1.4  Add caching on real-time endpoints (respect CTS rate limits)
+[ ] 1.5  Write an OpenAPI spec describing every endpoint
+[ ] 1.6  Version the API (/api/v1/...)
+[ ] 1.7  Add basic API tests in tests/
+
+----------------------------------------------------------------
+PHASE 2 - WEB APP POLISH (PWA)
+----------------------------------------------------------------
+[ ] 2.1  Refactor Nuxt pages to consume only /api/v1 endpoints
+[ ] 2.2  Add @vite-pwa/nuxt (installable app, service worker)
+[ ] 2.3  Cache stops & lines offline
+[ ] 2.4  Mobile-first responsive audit (Vuetify breakpoints)
+[ ] 2.5  Web push notifications for line disruptions
+[ ] 2.6  Lighthouse pass: performance + accessibility > 90
+
+----------------------------------------------------------------
+PHASE 3 - FLUTTER PROJECT SETUP (ANDROID / IOS ONLY)
+----------------------------------------------------------------
+[ ] 3.1  Install Flutter SDK + Android Studio + Xcode
+[ ] 3.2  Create flutter app (mobile/ folder or separate repo)
+[ ] 3.3  Choose state management (Riverpod recommended)
+[ ] 3.4  Feature-first folder structure (features/stops, features/lines...)
+[ ] 3.5  Generate Dart API client from the OpenAPI spec
+[ ] 3.6  Set up flavors: dev / staging / prod
+[ ] 3.7  Material 3 theme matching the web app colors
+[ ] 3.8  GitLab CI job: flutter analyze + flutter test
+[ ] 3.9  GitLab CI job: build debug APK on each MR
+
+----------------------------------------------------------------
+PHASE 4 - CORE MOBILE FEATURES (MVP)
+----------------------------------------------------------------
+[ ] 4.1  Stop search (name / line)
+[ ] 4.2  Nearby stops via geolocation permission
+[ ] 4.3  Real-time arrivals screen for a stop
+[ ] 4.4  Line detail screen (route, direction, schedule)
+[ ] 4.5  Map screen (flutter_map + OpenStreetMap)
+[ ] 4.6  Show live vehicle positions on the map
+[ ] 4.7  Favorites (local storage: Hive or Drift)
+[ ] 4.8  Recent stops history
+[ ] 4.9  Error / offline states for every screen
+[ ] 4.10 MVP internal release (APK + TestFlight)
+
+----------------------------------------------------------------
+PHASE 5 - MOBILE-NATIVE VALUE
+----------------------------------------------------------------
+[ ] 5.1  Firebase Cloud Messaging setup (Android + iOS)
+[ ] 5.2  Push notifications for disruptions on favorite lines
+[ ] 5.3  Home screen widget: next departures for favorite stop
+[ ] 5.4  Offline mode: cached GTFS schedules fallback
+[ ] 5.5  Deep links (share a stop/line, open from web URL)
+[ ] 5.6  Dark mode + French/English localization
+
+----------------------------------------------------------------
+PHASE 6 - RELEASE & ITERATE
+----------------------------------------------------------------
+[ ] 6.1  App signing: Android keystore + iOS certificates
+[ ] 6.2  Fastlane setup for both stores
+[ ] 6.3  GitLab CI: automated release builds on tags
+[ ] 6.4  Play Store internal track beta
+[ ] 6.5  TestFlight beta
+[ ] 6.6  Crash reporting (Sentry or Crashlytics)
+[ ] 6.7  Analytics on key screens
+[ ] 6.8  Accessibility pass (TalkBack / VoiceOver)
+[ ] 6.9  Store listings (screenshots, descriptions FR/EN)
+[ ] 6.10 Public release v1.0
+
+----------------------------------------------------------------
+RULES
+----------------------------------------------------------------
+- Single source of truth = the /api/v1 backend. No transit logic in clients.
+- Phase 4 alone is a shippable MVP. Ship early, iterate.
+- Update this file as you go: [ ] -> [~] -> [x]

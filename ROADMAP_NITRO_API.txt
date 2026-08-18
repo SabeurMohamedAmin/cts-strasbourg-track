@@ -1,0 +1,99 @@
+================================================================
+ CTS STRASBOURG TRACK - ROADMAP: EXPOSE NUXT/NITRO API
+            FOR THE FLUTTER MOBILE APP (ANDROID / IOS)
+================================================================
+Legend:  [x] done   [~] in progress   [ ] todo
+
+Goal: the web stays Nuxt/Vuetify. The same Nitro backend must
+serve the Flutter app as a clean, stable, documented public API.
+
+----------------------------------------------------------------
+STEP 1 - INVENTORY & SCOPE
+----------------------------------------------------------------
+[x] 1.1  Nitro API routes exist (server/api/stops, routes, stations,
+         vehicles, stream, eurometropole, geocode)
+[x] 1.2  api-version middleware exists (server/middleware/api-version.ts)
+[ ] 1.3  List endpoints the mobile app NEEDS (public transit data)
+[ ] 1.4  List endpoints to keep PRIVATE (admin/*, blog admin)
+[ ] 1.5  Decide the public surface: /api/v1/stops, /api/v1/routes,
+         /api/v1/stations, /api/v1/vehicles, /api/v1/geocode
+
+----------------------------------------------------------------
+STEP 2 - API CONTRACT & VERSIONING
+----------------------------------------------------------------
+[ ] 2.1  Freeze response shapes: define types in shared/ for every
+         public endpoint (single source of truth)
+[ ] 2.2  Standard error format: { statusCode, code, message }
+[ ] 2.3  Standard success envelope + pagination for list endpoints
+         (limit/offset or cursor on /stops, /routes)
+[ ] 2.4  Enforce /api/v1 prefix via api-version middleware
+[ ] 2.5  Write OpenAPI 3 spec (docs/openapi.yaml) covering v1
+[ ] 2.6  Serve the spec: GET /api/v1/openapi.json
+[ ] 2.7  Rule: never break v1; breaking changes go to /api/v2
+
+----------------------------------------------------------------
+STEP 3 - SECURITY & ACCESS CONTROL
+----------------------------------------------------------------
+[ ] 3.1  Confirm CTS credentials are used server-side only
+         (server/services/realtime/cts-client.ts) - never in Flutter
+[ ] 3.2  Block /api/admin/* from public access (auth middleware,
+         reject requests without a valid session/token)
+[ ] 3.3  Add a lightweight app token for mobile clients
+         (X-App-Token header checked in middleware)
+[ ] 3.4  CORS: web app is same-origin; mobile does not need CORS,
+         so keep CORS strict (no wildcard *)
+[ ] 3.5  Rate limiting per IP/token on public endpoints
+         (protect CTS quota behind your cache)
+[ ] 3.6  HTTPS only + HSTS on the production host
+
+----------------------------------------------------------------
+STEP 4 - REAL-TIME STRATEGY FOR MOBILE
+----------------------------------------------------------------
+[ ] 4.1  Verify /api/stream/vehicles (SSE) works from a non-browser
+         client (curl test with long-lived connection)
+[ ] 4.2  Add heartbeat/keep-alive events so mobile detects drops
+[ ] 4.3  Provide a polling fallback: GET /api/v1/vehicles with
+         Cache-Control + short TTL (mobile networks kill SSE)
+[ ] 4.4  Document reconnection strategy (Last-Event-ID support)
+[ ] 4.5  Decide arrivals refresh contract for stops
+         (/api/v1/stops/:id/arrivals - polling interval guidance)
+
+----------------------------------------------------------------
+STEP 5 - PERFORMANCE & CACHING
+----------------------------------------------------------------
+[ ] 5.1  Cache-Control headers on static-ish data (stops, routes,
+         shapes: hours; arrivals/vehicles: seconds)
+[ ] 5.2  ETag support so Flutter can do conditional GETs
+[ ] 5.3  Gzip/br compression enabled on JSON responses
+[ ] 5.4  Slim payloads: mobile variants if needed (?fields=,
+         simplified shapes for map polylines)
+[ ] 5.5  Load test the public endpoints (k6 or autocannon)
+
+----------------------------------------------------------------
+STEP 6 - DEPLOYMENT & ENVIRONMENTS
+----------------------------------------------------------------
+[ ] 6.1  Stable base URLs: prod api at https://<domain>/api/v1,
+         staging equivalent for the Flutter dev flavor
+[ ] 6.2  Health endpoint: GET /api/v1/health (db + CTS poller status)
+[ ] 6.3  Request logging with response times (extend
+         server/plugins/request-logger.ts)
+[ ] 6.4  Error tracking on server (Sentry) with endpoint tags
+[ ] 6.5  CI: contract tests run on every MR (spec vs real responses)
+
+----------------------------------------------------------------
+STEP 7 - FLUTTER HANDSHAKE
+----------------------------------------------------------------
+[ ] 7.1  Generate Dart client from /api/v1/openapi.json
+[ ] 7.2  Smoke-test every public endpoint from the Flutter app
+         (dev flavor -> staging API)
+[ ] 7.3  Verify SSE or polling behavior on real devices
+         (Android Doze, iOS background limits)
+[ ] 7.4  Pin the contract: any server change must regenerate the
+         Dart client in the same MR cycle
+
+----------------------------------------------------------------
+RULES
+----------------------------------------------------------------
+- The Nitro backend is the ONLY consumer of the CTS API.
+- Flutter and Nuxt web consume the exact same /api/v1 endpoints.
+- Update this file as you go: [ ] -> [~] -> [x]
