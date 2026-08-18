@@ -41,7 +41,7 @@ export function useMapInstance() {
    * Some styles reference stacks that 404; swapping in the fallback keeps
    * every text layer rendering.
    */
-  function buildTransformRequest(url: string, resourceType: string): maplibregl.RequestParameters {
+  function buildTransformRequest(url: string, resourceType?: maplibregl.ResourceType): maplibregl.RequestParameters {
     if (resourceType === 'Glyphs' && url.includes('/fonts/')) {
       const fixed = url.replace(
         /(https?:\/\/[^/]+\/fonts\/)([^/]+)(\/)/,
@@ -86,7 +86,7 @@ export function useMapInstance() {
       maxBounds: options.maxBounds,
       minZoom: options.minZoom,
       maxZoom: options.maxZoom,
-      attributionControl: true,
+      attributionControl: {},
       transformRequest: buildTransformRequest,
     })
 
@@ -101,7 +101,6 @@ export function useMapInstance() {
       trackUserLocation: true,
       showUserLocation: true,
       showAccuracyCircle: true,
-      showUserHeading: true,
       fitBoundsOptions: { maxZoom: 16 },
     })
     instance.addControl(geolocateControl, 'top-right')
