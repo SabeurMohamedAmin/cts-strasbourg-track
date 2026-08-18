@@ -281,3 +281,115 @@ interface GeocodeResult {
 Authoritative max zoom-out frame for the map.
 
 **Response** `200`: `{ bounds: [[swLon, swLat], [neLon, neLat]] }` — never fails (static data).
+
+---
+
+## Mobile / platform (v1)
+
+These endpoints were added for the Flutter app (ROADMAP_NITRO_API Step 8).
+They follow the same frozen-contract rule as every v1 endpoint.
+
+### GET `/api/v1/health`
+
+Liveness/readiness probe. Always `200`; the `status` field carries the signal.
+
+**Response** `200`: `HealthStatus`
+
+```ts
+interface HealthStatus {
+  status: 'ok' | 'degraded'
+  time: string  // ISO 8601
+  checks: {
+    database: 'up' | 'down'
+    ctsPoller: 'live' | 'stale' | 'disabled'
+  }
+}
+```
+
+### GET `/api/v1/openapi.json`
+
+The OpenAPI 3 spec (docs/openapi.yaml) as JSON, for client generation.
+Cached `public, max-age=3600, immutable`.
+
+### GET `/api/v1/disruptions`
+
+Current and upcoming service disruptions, critical first. A row is returned
+while its window overlaps now (`startsAt <= now` and `endsAt` null or future).
+
+**Response** `200`: `Disruption[]` — supports `If-None-Match` (304).
+Caching: `public, max-age=60, stale-while-revalidate=300`.
+
+```ts
+interface Disruption {
+  id: number
+  title: string
+  description: string
+  severity: 'info' | 'warning' | 'critical'
+  lineIds: string[]   // empty = network-wide
+  stopIds: string[]   // empty = no specific stop
+  startsAt: string    // ISO 8601
+  endsAt: string | null
+}
+```
+
+### POST `/api/v1/devices`
+
+Register a handset for push alerts. Idempotent (upsert on `fcmToken`).
+
+**Body**:
+
+```ts
+{ fcmToken: string, platform: 'android' | 'ios', favoriteLineIds: string[] }
+```
+
+**Response** `201`: `{ id: number, ok: true }` — **Errors**: `400` invalid body.
+
+### GET `/api/v1/stops/:id/next-departures`
+
+Tiny payload for a home-screen widget: the next few departures, projected from
+the same live+scheduled merge as `/arrivals`.
+
+| Param | Type | Default | Bounds |
+|-------|------|---------|--------|
+| `limit` | int | 3 | 1–5 |
+
+**Response** `200`: `NextDeparturesResponse` — supports `If-None-Match` (304).
+Caching: `public, max-age=60, stale-while-revalidate=120`.
+
+```ts
+interface NextDeparturesResponse {
+  stopId: string
+  stopName: string
+  departures: Array<{
+    lineLabel: string
+    destination: string
+    departure: string  // ISO 8601
+    status: 'live' | 'estimated' | 'scheduled'
+    routeColor: string
+    routeTextColor: string
+  }>
+}
+```
+
+### POST `/api/v1/track`
+
+Accept a product analytics event. Never blocks the app.
+
+**Body**: `{ event: string, platform: 'web' | 'android' | 'ios', properties?: object }`
+
+**Response** `202`: `{ ok: true }` — **Errors**: `400` invalid body.
+
+---
+
+## Security & caching notes (v1)
+
+- **App token (3.3)**: when `NUXT_APP_TOKEN` is set, non-browser `/api/v1/*`
+  requests must send `X-App-Token: <token>`. Same-origin browser calls are
+  exempt. Missing/invalid → `401 { code: 'invalid_app_token' }`.
+- **Rate limit (3.5)**: 120 req/min per token-or-IP on `/api/v1/*` (SSE,
+  `/health`, `/openapi.json` exempt). Over the limit → `429 { code: 'rate_limited' }`.
+- **CORS (3.4)**: no wildcard; only the configured canonical origin is reflected.
+- **HSTS (3.6)**: `Strict-Transport-Security` on every `/api/*` response.
+- **Conditional GET (5.2)**: `/vehicles`, `/stops/:id/arrivals`,
+  `/stops/:id/next-departures` and `/disruptions` send a strong `ETag` and
+  answer `304 Not Modified` to a matching `If-None-Match`.
