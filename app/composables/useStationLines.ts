@@ -12,7 +12,7 @@ export function toLineSlug(value?: string): string {
   return (value ?? '').toLowerCase().replace(/[^a-z0-9]/g, '')
 }
 
-/** One comparable shape for headsigns, direction ids and URLs: 'Lingolsheim Tiergaertel' -> 'lingolsheimtiergaertel'. */
+/** One comparable shape for headsigns, direction ids and URLs: 'Lingolsheim Alouettes' -> 'lingolsheim-alouettes'. */
 export function toDirectionSlug(value?: string): string {
   return (value ?? '')
     .normalize('NFD')
@@ -20,7 +20,8 @@ export function toDirectionSlug(value?: string): string {
     .toLowerCase()
     .replace(/œ/g, 'oe')
     .replace(/æ/g, 'ae')
-    .replace(/[^a-z0-9]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
 }
 
 /** Reads `?line=c3` from a route query; '' when the URL says nothing. */
@@ -29,7 +30,7 @@ export function readLineSlug(query: LocationQuery): string {
   return toLineSlug(Array.isArray(raw) ? raw[0] ?? '' : raw ?? '')
 }
 
-/** Reads `?direction=lingolsheimtiergaertel` from a route query; '' when the URL says nothing. */
+/** Reads `?direction=lingolsheim-alouettes` from a route query; '' when the URL says nothing. */
 export function readDirectionSlug(query: LocationQuery): string {
   const raw = query[DIRECTION_QUERY_KEY]
   return toDirectionSlug(Array.isArray(raw) ? raw[0] ?? '' : raw ?? '')
@@ -58,7 +59,7 @@ export function stationQuery(lineLabel?: string, directionHeadsign?: string) {
 /**
  * Line and direction the reader is looking at, at one station.
  *
- * The selected line and direction live in the URL (`/station/cite-de-l-ill?line=c3&direction=lingolsheimtiergaertel`),
+ * The selected line and direction live in the URL (`/station/cite-de-l-ill?line=c3&direction=lingolsheim-alouettes`),
  * so they survive a reload, a shared link and every hop along the route bar. Only a
  * line/direction this station serves can win; fallback to the defaults served here.
  */
@@ -89,13 +90,20 @@ export function useStationLines(schedule: Ref<StopScheduleResponse | null>) {
     if (!line) return undefined
     const wanted = readDirectionSlug(route.query)
     if (!wanted) return undefined
+    const wantedCompact = wanted.replace(/-/g, '')
 
-    const index = line.directions.findIndex((dir, i) =>
-      toDirectionSlug(dir.headsign) === wanted
-      || String(i) === wanted
-      || String(dir.directionId) === wanted
-      || dir.headsigns.some(h => toDirectionSlug(h) === wanted),
-    )
+    const index = line.directions.findIndex((dir, i) => {
+      const dirSlug = toDirectionSlug(dir.headsign)
+      return dirSlug === wanted
+        || dirSlug.replace(/-/g, '') === wantedCompact
+        || String(i) === wanted
+        || String(dir.directionId) === wanted
+        || dir.headsigns.some((h) => {
+          const hSlug = toDirectionSlug(h)
+          return hSlug === wanted || hSlug.replace(/-/g, '') === wantedCompact
+        })
+    })
+
     return index >= 0 ? index : undefined
   }
 

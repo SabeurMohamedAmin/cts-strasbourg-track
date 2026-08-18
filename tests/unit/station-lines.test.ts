@@ -26,10 +26,11 @@ describe('toLineSlug', () => {
 })
 
 describe('toDirectionSlug', () => {
-  it('normalizes headsigns into URL slugs', () => {
-    expect(toDirectionSlug('Lingolsheim Tiergaertel')).toBe('lingolsheimtiergaertel')
-    expect(toDirectionSlug('Hœnheim Gare')).toBe('hoenheimgare')
-    expect(toDirectionSlug('Étoile Bourse')).toBe('etoilebourse')
+  it('normalizes headsigns into kebab-case URL slugs', () => {
+    expect(toDirectionSlug('Lingolsheim Alouettes')).toBe('lingolsheim-alouettes')
+    expect(toDirectionSlug('Lingolsheim Tiergaertel')).toBe('lingolsheim-tiergaertel')
+    expect(toDirectionSlug('Hœnheim Gare')).toBe('hoenheim-gare')
+    expect(toDirectionSlug('Étoile Bourse')).toBe('etoile-bourse')
   })
 
   it('treats a missing value as no direction', () => {
@@ -55,9 +56,10 @@ describe('readLineSlug', () => {
 })
 
 describe('readDirectionSlug', () => {
-  it('reads ?direction and returns it as a normalized slug', () => {
-    expect(readDirectionSlug({ direction: 'Lingolsheim Tiergaertel' })).toBe('lingolsheimtiergaertel')
-    expect(readDirectionSlug({ direction: 'hoenheimgare' })).toBe('hoenheimgare')
+  it('reads ?direction and returns it as a normalized kebab-case slug', () => {
+    expect(readDirectionSlug({ direction: 'Lingolsheim Alouettes' })).toBe('lingolsheim-alouettes')
+    expect(readDirectionSlug({ direction: 'hoenheim-gare' })).toBe('hoenheim-gare')
+    expect(readDirectionSlug({ direction: 'lingolsheimalouettes' })).toBe('lingolsheimalouettes')
   })
 
   it('returns an empty slug when direction query is absent', () => {
@@ -79,7 +81,7 @@ describe('lineQuery', () => {
 
 describe('directionQuery', () => {
   it('builds the direction query for station links', () => {
-    expect(directionQuery('Lingolsheim Tiergaertel')).toEqual({ direction: 'lingolsheimtiergaertel' })
+    expect(directionQuery('Lingolsheim Alouettes')).toEqual({ direction: 'lingolsheim-alouettes' })
   })
 
   it('returns undefined when no direction is provided', () => {
@@ -90,15 +92,15 @@ describe('directionQuery', () => {
 
 describe('stationQuery', () => {
   it('combines line and direction query parameters', () => {
-    expect(stationQuery('B', 'Lingolsheim Tiergaertel')).toEqual({
-      line: 'b',
-      direction: 'lingolsheimtiergaertel',
+    expect(stationQuery('45', 'Lingolsheim Alouettes')).toEqual({
+      line: '45',
+      direction: 'lingolsheim-alouettes',
     })
   })
 
   it('handles partial parameters gracefully', () => {
-    expect(stationQuery('B')).toEqual({ line: 'b' })
-    expect(stationQuery(undefined, 'Lingolsheim Tiergaertel')).toEqual({ direction: 'lingolsheimtiergaertel' })
+    expect(stationQuery('45')).toEqual({ line: '45' })
+    expect(stationQuery(undefined, 'Lingolsheim Alouettes')).toEqual({ direction: 'lingolsheim-alouettes' })
     expect(stationQuery()).toEqual({})
   })
 })
