@@ -47,6 +47,7 @@ import {
   type TripStopEvent,
 } from '~~/server/services/simulation/schedule-cache'
 import { getAllStops } from '~~/server/services/stops-cache'
+import { sendNotModified } from '~~/server/utils/etag'
 import type { StopArrival, StopArrivalsResponse, StopServedLine } from '~~/shared/types/stop'
 
 /**
@@ -325,10 +326,18 @@ export default defineEventHandler(async (event): Promise<StopArrivalsResponse> =
     .slice(0, Math.max(limit, required.length))
     .sort((a, b) => a.scheduledArrival.localeCompare(b.scheduledArrival))
 
-  return {
+  const body: StopArrivalsResponse = {
     stopId,
     stopName: stopRow.stopName,
     servedLines,
     arrivals: merged.map(({ routeId: _routeId, ...arrival }) => arrival),
   }
+
+  // Real-time arrivals: short cache (5.1) + conditional GET (5.2). A forced
+  // refresh (?refresh / ?_t) must never be answered from any cache.
+  setResponseHeader(event, 'Cache-Control', forceRefresh
+    ? 'no-store'
+    : 'public, max-age=10, stale-while-revalidate=20')
+  if (sendNotModified(event, body)) return undefined
+  return body
 })
