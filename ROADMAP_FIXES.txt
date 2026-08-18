@@ -73,11 +73,15 @@ P2 — VALIDATE BACKEND (2–4 weeks, concurrent with CTS token wait)
       Add .env with real DATABASE_URL (not placeholder).
       Verify: /, /live, /plan, /favoris load without console errors.
 
-[ ] 8. CTS SIRI TOKEN REQUESTED
+[/] 8. CTS SIRI TOKEN REQUESTED
       URL: https://api.cts-strasbourg.eu
       Action: Submit request. Save confirmation/reference number.
       Note: If refused/restricted — document terms before proceeding with Flutter.
       Verify: Email confirmation saved; token TOS read.
+      Status: TOKEN RECEIVED (May 2026). Remaining before [x]: read the
+      TOS and record the terms below — item 11 gates flutter create on
+      "TOS permits app use". Token lives in .env (NUXT_CTS_API_TOKEN),
+      server-side only, never committed.
 
 [ ] 9. PRODUCTION SSE STABILITY CHECK (2-week observation)
       Monitor after deploy:
@@ -131,9 +135,12 @@ Poll interval decision (P0 #2):
   designed around. .env.example updated accordingly (2026-07-24).
 
 CTS token status (P2 #8):
-  Requested: 2026-___-___
-  Response received: 2026-___-___
-  Terms (free / commercial / restricted / refused):
+  Requested: 2026-05 (exact date not recorded)
+  Response received: 2026-05 — token in hand (logged 2026-08-18)
+  Terms (free / commercial / restricted / refused): UNKNOWN — TOS not yet
+    reviewed. TODO: re-read the confirmation email / api.cts-strasbourg.eu
+    terms and record free/commercial/restricted here before the Flutter
+    readiness gate (item 11).
 
 App name chosen (P1 #6):
   Name: Strasbourg Bus-Trams Live (chosen 2026-07-24)
