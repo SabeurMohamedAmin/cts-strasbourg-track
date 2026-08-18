@@ -27,6 +27,17 @@ vi.mock('~~/server/services/simulation/scheduled-vehicles', () => ({
 // stub it as the identity function so the module can be imported directly.
 vi.stubGlobal('defineEventHandler', (handler: unknown) => handler)
 
+// The handler sets Cache-Control and may answer 304 via the ETag helper.
+// Stub the h3 globals it touches; getHeader returns undefined (no
+// If-None-Match) so sendNotModified always falls through to a 200 body.
+vi.stubGlobal('setResponseHeader', vi.fn())
+vi.stubGlobal('getHeader', vi.fn().mockReturnValue(undefined))
+
+/** Minimal H3 event stand-in: only `node.res` is touched by the 304 path. */
+const fakeEvent = {
+  node: { res: { statusCode: 200, end: vi.fn() } },
+} as never
+
 function makeSnapshot(freshness: 'live' | 'stale'): VehicleSnapshotInput {
   return {
     freshness,
@@ -37,8 +48,8 @@ function makeSnapshot(freshness: 'live' | 'stale'): VehicleSnapshotInput {
 
 async function callHandler() {
   const handler = (await import('~~/server/api/vehicles.get'))
-    .default as unknown as () => Promise<VehicleSnapshotInput>
-  return handler()
+    .default as unknown as (event: never) => Promise<VehicleSnapshotInput>
+  return handler(fakeEvent)
 }
 
 describe('GET /api/vehicles — snapshot fallback priority', () => {
