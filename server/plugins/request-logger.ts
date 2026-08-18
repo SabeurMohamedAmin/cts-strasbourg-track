@@ -19,9 +19,12 @@ export default defineNitroPlugin((nitroApp) => {
 
     const startedAt = event.context.requestStartedAt as number | undefined
     const durationMs = startedAt ? Date.now() - startedAt : 0
+    // Split versioned (mobile / web-v1) from legacy unversioned traffic so the
+    // FLUTTER 1.8 migration to /api/v1 can be watched in the logs (6.3).
+    const version = path.startsWith('/api/v1/') ? 'v1' : 'legacy'
     // Note: for the SSE stream (/api/stream/vehicles) this fires when the
     // connection closes — its duration is the client's connection time.
-    console.log(`[api] ${event.method} ${path} -> ${getResponseStatus(event)} (${durationMs} ms)`)
+    console.log(`[api] [${version}] ${event.method} ${path} -> ${getResponseStatus(event)} (${durationMs} ms)`)
   })
 
   nitroApp.hooks.hook('error', (error, { event }) => {
