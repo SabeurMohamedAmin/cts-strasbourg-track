@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRouteBarScroll } from '~/composables/useRouteBarScroll'
-import { lineQuery } from '~/composables/useStationLines'
+import { stationQuery } from '~/composables/useStationLines'
 
 /**
  * Stops of the selected line and direction: dots on a horizontal line, with the
@@ -19,6 +19,8 @@ const props = defineProps<{
   lineColor?: string
   /** Label of the active line, e.g. 'C3' — carried to the next station as `?line=c3`. */
   lineLabel?: string
+  /** Headsign of the active direction, e.g. 'Lingolsheim Tiergaertel' — carried to the next station as `?direction=lingolsheimtiergaertel`. */
+  directionHeadsign?: string
 }>()
 
 const track = ref<HTMLElement | null>(null)
@@ -34,8 +36,8 @@ const stopsKey = computed(() =>
   props.stops.map(stop => `${stop.slug}${stop.isCurrent ? '*' : ''}`).join(),
 )
 
-/** `?line=c3`, so the next station opens on the line we are reading. */
-const stopQuery = computed(() => lineQuery(props.lineLabel))
+/** `?line=c3&direction=lingolsheimtiergaertel`, so the next station opens on the line and direction we are reading. */
+const stopQuery = computed(() => stationQuery(props.lineLabel, props.directionHeadsign))
 
 onMounted(() => {
   centerCurrent(false)

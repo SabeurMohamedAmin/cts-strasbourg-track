@@ -30,6 +30,8 @@ defineProps<{
   lineColor?: string
   /** Short label of the selected line, e.g. "C3" or "A". */
   lineLabel?: string
+  /** Headsign of the selected direction, e.g. "Lingolsheim Tiergaertel". */
+  directionHeadsign?: string
   hasLiveData?: boolean
   isFavorite?: boolean
   /** The station has a platform we can add to a favourite list. */
@@ -112,6 +114,7 @@ const direction = defineModel<number>('direction', { required: true })
       <StationRouteBar :stops="stops"
         :line-color="lineColor"
         :line-label="lineLabel"
+        :direction-headsign="directionHeadsign"
         class="mt-1" />
     </template>
   </v-card>

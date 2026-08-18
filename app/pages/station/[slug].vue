@@ -108,6 +108,7 @@ useHead({ title: () => schedule.value ? `Horaires — ${schedule.value.stopName}
           :stops="routeBarStops"
           :line-color="currentLine?.routeColor"
           :line-label="currentLine?.lineLabel"
+          :direction-headsign="currentDirection?.headsign"
           :has-live-data="hasLiveData"
           :is-favorite="isFavorite"
           :can-favorite="!!stopId"

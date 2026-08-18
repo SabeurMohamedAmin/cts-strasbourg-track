@@ -4,10 +4,23 @@ import type { ScheduleDirection, ScheduleLine, StopScheduleResponse } from '~~/s
 
 /** Query parameter carrying the selected line from one station to the next. */
 export const LINE_QUERY_KEY = 'line'
+/** Query parameter carrying the selected direction from one station to the next. */
+export const DIRECTION_QUERY_KEY = 'direction'
 
 /** One comparable shape for labels, route ids and URLs: 'C 3' -> 'c3'. */
 export function toLineSlug(value?: string): string {
   return (value ?? '').toLowerCase().replace(/[^a-z0-9]/g, '')
+}
+
+/** One comparable shape for headsigns, direction ids and URLs: 'Lingolsheim Tiergaertel' -> 'lingolsheimtiergaertel'. */
+export function toDirectionSlug(value?: string): string {
+  return (value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/œ/g, 'oe')
+    .replace(/æ/g, 'ae')
+    .replace(/[^a-z0-9]/g, '')
 }
 
 /** Reads `?line=c3` from a route query; '' when the URL says nothing. */
@@ -16,19 +29,38 @@ export function readLineSlug(query: LocationQuery): string {
   return toLineSlug(Array.isArray(raw) ? raw[0] ?? '' : raw ?? '')
 }
 
-/** Query to append to a station link, or `undefined` when no line is selected. */
+/** Reads `?direction=lingolsheimtiergaertel` from a route query; '' when the URL says nothing. */
+export function readDirectionSlug(query: LocationQuery): string {
+  const raw = query[DIRECTION_QUERY_KEY]
+  return toDirectionSlug(Array.isArray(raw) ? raw[0] ?? '' : raw ?? '')
+}
+
+/** Query to append to a station link for line, or `undefined` when no line is selected. */
 export function lineQuery(lineLabel?: string) {
   const slug = toLineSlug(lineLabel)
   return slug ? { [LINE_QUERY_KEY]: slug } : undefined
 }
 
+/** Query to append to a station link for direction, or `undefined` when no direction is selected. */
+export function directionQuery(directionHeadsign?: string) {
+  const slug = toDirectionSlug(directionHeadsign)
+  return slug ? { [DIRECTION_QUERY_KEY]: slug } : undefined
+}
+
+/** Combined query to append to a station link carrying both line and direction. */
+export function stationQuery(lineLabel?: string, directionHeadsign?: string) {
+  return {
+    ...lineQuery(lineLabel),
+    ...directionQuery(directionHeadsign),
+  }
+}
+
 /**
  * Line and direction the reader is looking at, at one station.
  *
- * The selected line lives in the URL (`/station/cite-de-l-ill?line=c3`), so it
- * survives a reload, a shared link and every hop along the route bar. Only a
- * line this station serves can win: when it does not serve `?line=c3` we keep
- * the line already on screen, and fall back to the first one served here.
+ * The selected line and direction live in the URL (`/station/cite-de-l-ill?line=c3&direction=lingolsheimtiergaertel`),
+ * so they survive a reload, a shared link and every hop along the route bar. Only a
+ * line/direction this station serves can win; fallback to the defaults served here.
  */
 export function useStationLines(schedule: Ref<StopScheduleResponse | null>) {
   const route = useRoute()
@@ -52,6 +84,21 @@ export function useStationLines(schedule: Ref<StopScheduleResponse | null>) {
     )
   }
 
+  /** The direction index the URL asks for, when the line has it. */
+  function directionFromUrl(line: ScheduleLine | null): number | undefined {
+    if (!line) return undefined
+    const wanted = readDirectionSlug(route.query)
+    if (!wanted) return undefined
+
+    const index = line.directions.findIndex((dir, i) =>
+      toDirectionSlug(dir.headsign) === wanted
+      || String(i) === wanted
+      || String(dir.directionId) === wanted
+      || dir.headsigns.some(h => toDirectionSlug(h) === wanted),
+    )
+    return index >= 0 ? index : undefined
+  }
+
   // Runs on load, on every station change and on every `?line` change.
   watch([lines, () => route.query[LINE_QUERY_KEY]], () => {
     const list = lines.value
@@ -61,27 +108,47 @@ export function useStationLines(schedule: Ref<StopScheduleResponse | null>) {
       ?? (isStillServed ? selectedRouteId.value : list[0]?.routeId ?? '')
   }, { immediate: true })
 
-  // Another line means another pair of directions: start from the first.
-  watch(selectedRouteId, () => {
-    selectedDirection.value = 0
-  })
-
   const currentLine = computed<ScheduleLine | null>(
     () => lines.value.find(line => line.routeId === selectedRouteId.value) ?? null,
   )
 
-  // Write the selection back, so the address bar always shows what is on
-  // screen. `replace` keeps the back button on the previous station.
-  watch(currentLine, (line) => {
-    if (!import.meta.client || !line) return
-    if (readLineSlug(route.query) === toLineSlug(line.lineLabel)) return
+  // Sync direction when currentLine or `?direction` query changes
+  watch([currentLine, () => route.query[DIRECTION_QUERY_KEY]], () => {
+    const line = currentLine.value
+    if (!line || !line.directions.length) {
+      selectedDirection.value = 0
+      return
+    }
 
-    void router.replace({ query: { ...route.query, ...lineQuery(line.lineLabel) } })
-  })
+    const urlDirIndex = directionFromUrl(line)
+    if (urlDirIndex !== undefined) {
+      selectedDirection.value = urlDirIndex
+    } else if (selectedDirection.value >= line.directions.length) {
+      selectedDirection.value = 0
+    }
+  }, { immediate: true })
 
   const currentDirection = computed<ScheduleDirection | null>(
     () => currentLine.value?.directions[selectedDirection.value] ?? null,
   )
+
+  // Write the selection back, so the address bar always shows what is on
+  // screen. `replace` keeps the back button on the previous station.
+  watch([currentLine, currentDirection], ([line, direction]) => {
+    if (!import.meta.client || !line) return
+
+    const lineMatch = readLineSlug(route.query) === toLineSlug(line.lineLabel)
+    const dirMatch = readDirectionSlug(route.query) === toDirectionSlug(direction?.headsign)
+
+    if (lineMatch && dirMatch) return
+
+    void router.replace({
+      query: {
+        ...route.query,
+        ...stationQuery(line.lineLabel, direction?.headsign),
+      },
+    })
+  })
 
   /** Headsigns of the selected line, in the order of the direction toggle. */
   const directionLabels = computed(
@@ -97,3 +164,4 @@ export function useStationLines(schedule: Ref<StopScheduleResponse | null>) {
     directionLabels,
   }
 }
+
