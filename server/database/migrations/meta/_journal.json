@@ -36,6 +36,13 @@
       "when": 1785092750131,
       "tag": "0004_cultured_logan",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1786406400000,
+      "tag": "0005_disruptions_devices",
+      "breakpoints": true
     }
   ]
 }
