@@ -59,7 +59,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       window.requestIdleCallback(loadGoogleAnalytics, { timeout: 4000 })
     }
     else {
-      window.setTimeout(loadGoogleAnalytics, 1500)
+      setTimeout(loadGoogleAnalytics, 1500)
     }
   })
 })

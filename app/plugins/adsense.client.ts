@@ -29,7 +29,7 @@ export default defineNuxtPlugin(() => {
       window.requestIdleCallback(injectAdSense, { timeout: 5000 })
     }
     else {
-      window.setTimeout(injectAdSense, 2000)
+      setTimeout(injectAdSense, 2000)
     }
   })
 })
