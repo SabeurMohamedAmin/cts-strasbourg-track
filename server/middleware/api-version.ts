@@ -1,19 +1,20 @@
 /**
- * API versioning alias (ROADMAP #12, ROADMAP_NITRO_API 2.4).
+ * API version guard (ROADMAP #12, ROADMAP_NITRO_API 2.4).
  *
- * Rewrites /api/v1/<endpoint> to the unversioned /api/<endpoint> handler,
- * so both paths serve the same frozen v1 contract (see docs/API.md).
- * The Flutter client should call /api/v1/… — if a breaking change is ever
- * needed, add real /api/v2/ handlers and keep this alias for v1 clients.
+ * The /api/v1/<endpoint> → /api/<endpoint> aliasing itself is done by a route
+ * rule in nuxt.config.ts ('/api/v1/**': { proxy: '/api/**' }). A URL rewrite
+ * here does NOT work: Nitro's route matcher ignores a path rewritten from
+ * middleware, which made every /api/v1/* request 404.
  *
- * The rewrite happens before route matching: server middleware runs first,
- * and h3 resolves the route from req.url afterwards.
+ * What stays here, because only middleware runs before routing:
  *
  * SECURITY: the public v1 surface is ONLY the endpoints listed in
- * ROADMAP_NITRO_API 1.3. The admin area must never be reachable through
- * the versioned prefix, so /api/v1/admin/** is rejected with 404 BEFORE
- * the rewrite — otherwise the alias would silently expose /api/admin/*
- * under the public contract.
+ * ROADMAP_NITRO_API 1.3. The admin area must never be reachable through the
+ * versioned prefix, so /api/v1/admin/** is rejected with 404 before anything
+ * can route it — otherwise the alias would expose /api/admin/* publicly.
+ *
+ * Plus the X-API-Version tag so request logs can split v1 traffic from
+ * legacy unversioned calls during the FLUTTER 1.8 migration.
  */
 export default defineEventHandler((event) => {
   const url = event.node.req.url ?? ''
@@ -29,16 +30,6 @@ export default defineEventHandler((event) => {
     throw createError({ statusCode: 404, message: 'Not Found' })
   }
 
-  // Replaces only the first occurrence — the prefix.
-  const rewritten = url.replace('/api/v1', '/api')
-
-  // Update BOTH the node request url and h3's own path cache. `event.path`
-  // reads `_path` before falling back to node.req.url, so rewriting the url
-  // alone can leave the router matching /api/v1/... — which has no handler
-  // and 404s. h3's own useBase() sets the two together for this reason.
-  event.node.req.url = rewritten
-  event._path = rewritten
-  // Tag versioned traffic so request logs can split v1 (mobile/web-v1)
-  // from legacy unversioned calls during the FLUTTER 1.8 migration.
+  // Routing is handled by the route rule; only the tag is ours to set.
   setResponseHeader(event, 'X-API-Version', '1')
 })

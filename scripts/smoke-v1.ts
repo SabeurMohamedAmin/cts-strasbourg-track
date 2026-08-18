@@ -146,8 +146,9 @@ async function preflight(): Promise<boolean> {
   if (legacy === 200) {
     console.error(
       `[smoke] /api/health is 200 but /api/v1/health is ${versioned}: the /api/v1 alias is not\n`
-      + '        rewriting. Check server/middleware/api-version.ts (it must set both\n'
-      + '        event.node.req.url and event._path), then restart the dev server.',
+      + '        resolving. Check the routeRules entry in nuxt.config.ts\n'
+      + "        ('/api/v1/**': { proxy: '/api/**' }), then RESTART the dev server —\n"
+      + '        route rules are read at startup and are not hot-reloaded.',
     )
     return false
   }
