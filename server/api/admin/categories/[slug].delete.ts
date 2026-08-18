@@ -34,12 +34,13 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: 'Catégorie introuvable' })
   }
 
-  const [{ articleCount }] = await db
+  const [countRow] = await db
     .select({ articleCount: count() })
     .from(blogArticles)
     .where(eq(blogArticles.categoryId, category.id))
+  const articleCount = countRow?.articleCount ?? 0
 
-  if (articleCount! > 0 && !reassignTo) {
+  if (articleCount > 0 && !reassignTo) {
     throw createError({
       statusCode: 409,
       statusMessage: `${articleCount} article(s) utilisent encore cette catégorie — indiquez reassignTo`,
@@ -47,7 +48,7 @@ export default defineEventHandler(async (event) => {
   }
 
   await db.transaction(async (tx) => {
-    if (articleCount! > 0 && reassignTo) {
+    if (articleCount > 0 && reassignTo) {
       const [target] = await tx
         .select({ id: blogCategories.id })
         .from(blogCategories)
