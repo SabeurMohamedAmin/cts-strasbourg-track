@@ -72,14 +72,21 @@
 
   const canonicalUrl = `${siteOrigin}/blog/${String(route.params.slug)}`
 
+  // hreflang groundwork: one self-referencing tag per supported locale
+  // (fr only today) + x-default. Adding a locale later is mechanical —
+  // extend SUPPORTED_LOCALES, nothing to change here.
+  // `as const` is required: unhead types `rel` as a literal union, and a
+  // plain string inside .map() widens and no longer matches it.
+  const alternateLinks = [...SUPPORTED_LOCALES, 'x-default'].map(hreflang => ({
+    rel: 'alternate' as const,
+    hreflang,
+    href: canonicalUrl,
+  }))
+
   useHead({
     link: [
-      { rel: 'canonical', href: canonicalUrl },
-      // hreflang groundwork: one self-referencing tag per supported
-      // locale (fr only today) + x-default. Adding a locale later is
-      // mechanical — extend SUPPORTED_LOCALES, nothing to change here.
-      ...SUPPORTED_LOCALES.map(locale => ({ rel: 'alternate', hreflang: locale, href: canonicalUrl })),
-      { rel: 'alternate', hreflang: 'x-default', href: canonicalUrl },
+      { rel: 'canonical' as const, href: canonicalUrl },
+      ...alternateLinks,
     ],
     script: [{ type: 'application/ld+json', innerHTML: jsonLd }],
   })
