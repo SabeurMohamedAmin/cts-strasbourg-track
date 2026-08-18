@@ -78,17 +78,30 @@ STEP 2 - API CONTRACT & VERSIONING
 ----------------------------------------------------------------
 STEP 3 - SECURITY & ACCESS CONTROL
 ----------------------------------------------------------------
-[ ] 3.1  Confirm CTS credentials are used server-side only
+[x] 3.1  Confirm CTS credentials are used server-side only
          (server/services/realtime/cts-client.ts) - never in Flutter
-[ ] 3.2  Block /api/admin/* from public access (auth middleware,
+         Verified 2026-08-18: token read from runtimeConfig inside
+         server-only code; never in the public block, cannot reach clients.
+[x] 3.2  Block /api/admin/* from public access (auth middleware,
          reject requests without a valid session/token)
-[ ] 3.3  Add a lightweight app token for mobile clients
+         Verified 2026-08-18: every /api/admin/** handler calls
+         requireAdmin() (401 without a session); /api/v1/admin/** is 404.
+[x] 3.3  Add a lightweight app token for mobile clients
          (X-App-Token header checked in middleware)
-[ ] 3.4  CORS: web app is same-origin; mobile does not need CORS,
+         Done 2026-08-18: server/middleware/api-security.ts enforces
+         X-App-Token on non-browser /api/v1/* requests when NUXT_APP_TOKEN
+         is set. Same-origin browser traffic is exempt (PWA keeps working).
+[x] 3.4  CORS: web app is same-origin; mobile does not need CORS,
          so keep CORS strict (no wildcard *)
-[ ] 3.5  Rate limiting per IP/token on public endpoints
+         Done 2026-08-18: api-security.ts only reflects the configured
+         canonical origin, never '*'.
+[x] 3.5  Rate limiting per IP/token on public endpoints
          (protect CTS quota behind your cache)
-[ ] 3.6  HTTPS only + HSTS on the production host
+         Done 2026-08-18: server/utils/rate-limit.ts (fixed window, per
+         token-or-IP) wired into api-security.ts; SSE + health + spec exempt.
+[x] 3.6  HTTPS only + HSTS on the production host
+         Done 2026-08-18: api-security.ts sets Strict-Transport-Security on
+         every /api/* response (no-op on http://localhost).
 
 ----------------------------------------------------------------
 STEP 4 - REAL-TIME STRATEGY FOR MOBILE
@@ -105,9 +118,14 @@ STEP 4 - REAL-TIME STRATEGY FOR MOBILE
 ----------------------------------------------------------------
 STEP 5 - PERFORMANCE & CACHING
 ----------------------------------------------------------------
-[ ] 5.1  Cache-Control headers on static-ish data (stops, routes,
+[x] 5.1  Cache-Control headers on static-ish data (stops, routes,
          shapes: hours; arrivals/vehicles: seconds)
-[ ] 5.2  ETag support so Flutter can do conditional GETs
+         Done 2026-08-18: arrivals/vehicles now send short Cache-Control;
+         stops/routes/shapes/blog already cached for hours.
+[x] 5.2  ETag support so Flutter can do conditional GETs
+         Done 2026-08-18: server/utils/etag.ts (SHA-256 strong ETag +
+         sendNotModified 304 helper) wired into /vehicles, /stops/:id/arrivals,
+         /stops/:id/next-departures, /disruptions.
 [ ] 5.3  Gzip/br compression enabled on JSON responses
 [ ] 5.4  Slim payloads: mobile variants if needed (?fields=,
          simplified shapes for map polylines)
@@ -118,9 +136,14 @@ STEP 6 - DEPLOYMENT & ENVIRONMENTS
 ----------------------------------------------------------------
 [ ] 6.1  Stable base URLs: prod api at https://<domain>/api/v1,
          staging equivalent for the Flutter dev flavor
-[ ] 6.2  Health endpoint: GET /api/v1/health (db + CTS poller status)
-[ ] 6.3  Request logging with response times (extend
+[x] 6.2  Health endpoint: GET /api/v1/health (db + CTS poller status)
+         Done 2026-08-18: server/api/health.get.ts reports database up/down
+         and ctsPoller live/stale/disabled; always 200, status field carries
+         the degraded signal.
+[x] 6.3  Request logging with response times (extend
          server/plugins/request-logger.ts)
+         Done 2026-08-18: log lines now tag [v1] vs [legacy] traffic so the
+         /api/v1 migration can be watched.
 [ ] 6.4  Error tracking on server (Sentry) with endpoint tags
 [ ] 6.5  Contract tests (spec vs real responses) run locally
          before every MR (no pipeline - see issue #1)
