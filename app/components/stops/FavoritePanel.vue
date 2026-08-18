@@ -143,7 +143,7 @@ function submitNewGroup() {
     class="fp-trigger"
     :class="{ 'fp-trigger--active': isOpen }"
     :aria-label="isOpen ? 'Fermer les favoris' : 'Ouvrir les favoris'"
-    :aria-expanded="String(isOpen)"
+    :aria-expanded="isOpen"
     @click.stop="toggle"
   >
     <!-- Star icon -->

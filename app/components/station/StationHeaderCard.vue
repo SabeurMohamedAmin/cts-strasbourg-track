@@ -16,7 +16,7 @@ import type { ScheduleLine } from '~~/shared/types/schedule'
 /** One stop of the route bar. */
 interface RouteBarStop {
   name: string
-  slug?: string
+  slug: string
   isCurrent?: boolean
 }
 

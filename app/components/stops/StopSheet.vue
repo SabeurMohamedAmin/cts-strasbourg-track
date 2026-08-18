@@ -111,7 +111,7 @@ function onToggle(open: boolean) { if (!open) close() }
       <ServedLineChips
         v-if="servedLines.length"
         :lines="servedLines"
-        :active-line-ids="linesStore.activeLineIds"
+        :active-line-ids="[...linesStore.activeLineIds]"
         @toggle="onToggleLine"
       />
 
