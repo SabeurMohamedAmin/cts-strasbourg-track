@@ -117,7 +117,7 @@ export const blogArticleMedia = pgTable('blog_article_media', {
     .references(() => blogArticles.id, { onDelete: 'cascade' }),
   /** Display order inside the slider (0 = first). */
   position:  integer('position').notNull().default(0),
-  type:      text('type', { enum: ['image', 'youtube'] }).notNull(),
+  type:      text('type', { enum: ['image', 'youtube', 'vimeo'] }).notNull(),
   /** Image URL (third-party cloud) or YouTube video ID. */
   src:       text('src').notNull(),
   /** Alt text for images (accessibility). */
