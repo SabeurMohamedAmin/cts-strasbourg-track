@@ -116,10 +116,58 @@ async function readStream(): Promise<string> {
   }
 }
 
+/** Status of a HEAD-ish probe, or null when nothing is listening. */
+async function probe(path: string): Promise<number | null> {
+  try {
+    const response = await fetch(`${BASE_URL}${path}`, { headers })
+    return response.status
+  }
+  catch {
+    return null
+  }
+}
+
+/**
+ * Tells apart the three failure modes that all look like "everything 404s":
+ * no server, a broken /api/v1 alias, or a genuinely failing endpoint.
+ * Returns false when there is no point running the rest.
+ */
+async function preflight(): Promise<boolean> {
+  const versioned = await probe('/api/v1/health')
+  if (versioned === 200) return true
+
+  const legacy = await probe('/api/health')
+
+  if (versioned === null && legacy === null) {
+    console.error(`[smoke] Nothing is listening on ${BASE_URL} — start the server with \`pnpm dev\`.`)
+    return false
+  }
+
+  if (legacy === 200) {
+    console.error(
+      `[smoke] /api/health is 200 but /api/v1/health is ${versioned}: the /api/v1 alias is not\n`
+      + '        rewriting. Check server/middleware/api-version.ts (it must set both\n'
+      + '        event.node.req.url and event._path), then restart the dev server.',
+    )
+    return false
+  }
+
+  console.error(
+    `[smoke] Both /api/v1/health (${versioned}) and /api/health (${legacy}) failed: the server is\n`
+    + '        running but the API is not healthy. Check the dev server output.',
+  )
+  return false
+}
+
 async function main(): Promise<void> {
   console.info(`[smoke] Target: ${API}`)
   console.info(`[smoke] App token: ${headers['x-app-token'] ? 'sent' : 'not configured'}`)
   console.info(`[smoke] Writes: ${WITH_WRITES ? 'enabled (--write)' : 'skipped'}\n`)
+
+  if (!(await preflight())) {
+    process.exitCode = 1
+    return
+  }
 
   // Infrastructure ----------------------------------------------------------
   await check('GET /health', async () => {

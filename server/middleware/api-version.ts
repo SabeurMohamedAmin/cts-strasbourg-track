@@ -30,7 +30,14 @@ export default defineEventHandler((event) => {
   }
 
   // Replaces only the first occurrence — the prefix.
-  event.node.req.url = url.replace('/api/v1', '/api')
+  const rewritten = url.replace('/api/v1', '/api')
+
+  // Update BOTH the node request url and h3's own path cache. `event.path`
+  // reads `_path` before falling back to node.req.url, so rewriting the url
+  // alone can leave the router matching /api/v1/... — which has no handler
+  // and 404s. h3's own useBase() sets the two together for this reason.
+  event.node.req.url = rewritten
+  event._path = rewritten
   // Tag versioned traffic so request logs can split v1 (mobile/web-v1)
   // from legacy unversioned calls during the FLUTTER 1.8 migration.
   setResponseHeader(event, 'X-API-Version', '1')
