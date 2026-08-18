@@ -24,6 +24,7 @@
     "db:migrate:kit": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
+    "api:smoke": "tsx scripts/smoke-v1.ts",
     "gtfs:import": "tsx scripts/import-gtfs.ts",
     "blog:seed": "tsx scripts/seed-blog.ts"
   },
