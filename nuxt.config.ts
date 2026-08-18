@@ -122,6 +122,13 @@ export default defineNuxtConfig({
     // X-App-Token header. Empty = the check is disabled (local dev).
     // NUXT_APP_TOKEN — server-side only, never exposed to clients.
     appToken: '',
+    // Firebase Cloud Messaging service account (ROADMAP_NITRO_API 8.4).
+    // Disruption pushes are sent server-side only: these three values never
+    // reach a client. Empty = push disabled (local dev, builds).
+    // NUXT_FCM_PROJECT_ID / NUXT_FCM_CLIENT_EMAIL / NUXT_FCM_PRIVATE_KEY
+    fcmProjectId: '',
+    fcmClientEmail: '',
+    fcmPrivateKey: '',
     pollIntervalMs: 12000,
     // EstimatedTimetable can be a large response. Keep this longer than the
     // normal polling cadence; the poller skips ticks while a fetch is active.

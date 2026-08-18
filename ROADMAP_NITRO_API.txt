@@ -192,10 +192,17 @@ STEP 8 - PARITY & MOBILE-PLUS FEATURES (backend)
          (FCM token, platform android|ios, favorite line ids)
          Done 2026-08-18: devices table (migration 0005) +
          server/api/devices.post.ts (idempotent upsert on fcm_token).
-[ ] 8.4  Push sender service (server-side FCM; key in
+[x] 8.4  Push sender service (server-side FCM; key in
          runtimeConfig, never in clients). Web push (VAPID)
          shares the same disruptions source.
-         TODO: needs an FCM server key + a send trigger (on new disruption).
+         Done 2026-08-18: server/services/push/fcm-client.ts (FCM HTTP v1,
+         service-account JWT -> OAuth token, node:crypto only) +
+         disruption-push.ts (targeting + dead-token pruning) +
+         server/plugins/disruption-push.ts (60 s sweep of rows with
+         pushed_at IS NULL, severity warning|critical). Migration 0006 adds
+         disruptions.pushed_at. No-ops until NUXT_FCM_* is set.
+         Remaining: web push (VAPID) reuses the same targeting; and the
+         send path needs one live test against a real FCM project.
 [x] 8.5  Widget endpoint: GET /api/v1/stops/:id/next-departures
          (tiny payload, aggressive Cache-Control - home-screen widget)
          Done 2026-08-18: server/api/stops/[id]/next-departures.get.ts
