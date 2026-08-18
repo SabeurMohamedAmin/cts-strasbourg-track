@@ -51,7 +51,6 @@ export default defineNuxtConfig({
     // actually used in templates. Theme config lives in app/plugins/vuetify.ts.
     (_options, nuxt) => {
       nuxt.hooks.hook('vite:extendConfig', (config) => {
-        // @ts-expect-error vite plugin type mismatch between nuxt and vite-plugin-vuetify
         config.plugins?.push(vuetify({ autoImport: true }))
       })
     },
