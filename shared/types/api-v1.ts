@@ -13,7 +13,7 @@
  * devices, widget departures, analytics).
  */
 
-import type { StopArrival, StopServedLine } from './stop'
+import type { StopArrival } from './stop'
 
 // ---------------------------------------------------------------------------
 // Envelopes (2.2 / 2.3)
