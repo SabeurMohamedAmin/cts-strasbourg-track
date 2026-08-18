@@ -1,36 +1,45 @@
 import { describe, expect, it } from 'vitest'
-import { getLineFromQuery, normalizeLineSlug } from '../../app/composables/useStationLines'
+import { lineQuery, readLineSlug, toLineSlug } from '../../app/composables/useStationLines'
 
-describe('normalizeLineSlug', () => {
-  it('lowercases and strips spaces and special characters', () => {
-    expect(normalizeLineSlug('C3')).toBe('c3')
-    expect(normalizeLineSlug('c3')).toBe('c3')
-    expect(normalizeLineSlug('C 3')).toBe('c3')
-    expect(normalizeLineSlug('c-3')).toBe('c3')
-    expect(normalizeLineSlug('A')).toBe('a')
-    expect(normalizeLineSlug('10')).toBe('10')
+describe('toLineSlug', () => {
+  it('lowercases and drops everything that is not a letter or a digit', () => {
+    expect(toLineSlug('C3')).toBe('c3')
+    expect(toLineSlug('c3')).toBe('c3')
+    expect(toLineSlug('C 3')).toBe('c3')
+    expect(toLineSlug('c-3')).toBe('c3')
+    expect(toLineSlug('A')).toBe('a')
+    expect(toLineSlug('10')).toBe('10')
+  })
+
+  it('treats a missing value as no line', () => {
+    expect(toLineSlug()).toBe('')
+    expect(toLineSlug('')).toBe('')
   })
 })
 
-describe('getLineFromQuery', () => {
-  it('extracts line parameter from line', () => {
-    expect(getLineFromQuery({ line: 'C3' })).toBe('C3')
+describe('readLineSlug', () => {
+  it('reads ?line and returns it as a slug', () => {
+    expect(readLineSlug({ line: 'C3' })).toBe('c3')
+    expect(readLineSlug({ line: 'c3' })).toBe('c3')
   })
 
-  it('extracts line parameter from ligne', () => {
-    expect(getLineFromQuery({ ligne: 'c1' })).toBe('c1')
+  it('keeps the first value when the parameter is repeated', () => {
+    expect(readLineSlug({ line: ['c3', 'a'] })).toBe('c3')
   })
 
-  it('extracts line parameter from selected-line or slected-ligne', () => {
-    expect(getLineFromQuery({ 'selected-line': 'C3' })).toBe('C3')
-    expect(getLineFromQuery({ 'slected-ligne': 'c3' })).toBe('c3')
+  it('returns an empty slug when the URL says nothing', () => {
+    expect(readLineSlug({})).toBe('')
+    expect(readLineSlug({ line: null })).toBe('')
+  })
+})
+
+describe('lineQuery', () => {
+  it('builds the query a station link needs', () => {
+    expect(lineQuery('C3')).toEqual({ line: 'c3' })
   })
 
-  it('decodes encoded URL components', () => {
-    expect(getLineFromQuery({ line: '%43%33' })).toBe('C3')
-  })
-
-  it('returns empty string if no line parameter is present', () => {
-    expect(getLineFromQuery({})).toBe('')
+  it('adds nothing to the URL when no line is selected', () => {
+    expect(lineQuery()).toBeUndefined()
+    expect(lineQuery('')).toBeUndefined()
   })
 })

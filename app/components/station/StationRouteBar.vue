@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useRouteBarScroll } from '~/composables/useRouteBarScroll'
+import { lineQuery } from '~/composables/useStationLines'
 
 /**
  * Stops of the selected line and direction: dots on a horizontal line, with the
@@ -16,7 +17,7 @@ const props = defineProps<{
   stops: RouteBarStop[]
   /** Brand color of the line, hex WITHOUT the leading '#'. */
   lineColor?: string
-  /** Short label of the active line (e.g. 'C3', 'A') to maintain line selection when navigating */
+  /** Label of the active line, e.g. 'C3' — carried to the next station as `?line=c3`. */
   lineLabel?: string
 }>()
 
@@ -33,11 +34,8 @@ const stopsKey = computed(() =>
   props.stops.map(stop => `${stop.slug}${stop.isCurrent ? '*' : ''}`).join(),
 )
 
-/** URL query object to append to each station link to preserve line tracking. */
-const lineQuery = computed(() => {
-  if (!props.lineLabel) return undefined
-  return { line: props.lineLabel }
-})
+/** `?line=c3`, so the next station opens on the line we are reading. */
+const stopQuery = computed(() => lineQuery(props.lineLabel))
 
 onMounted(() => {
   centerCurrent(false)
@@ -72,7 +70,7 @@ watch(stopsKey, () => centerCurrent(true), { flush: 'post' })
            caches their timetable too (plugins/prefetch-station.client.ts). -->
       <NuxtLink v-for="(stop, index) in stops"
         :key="`${stop.slug}-${index}`"
-        :to="{ path: `/station/${stop.slug}`, query: lineQuery }"
+        :to="{ path: `/station/${stop.slug}`, query: stopQuery }"
         class="stop"
         :class="{ 'stop--current': stop.isCurrent }"
         :title="stop.name"
