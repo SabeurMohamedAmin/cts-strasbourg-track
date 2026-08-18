@@ -14,7 +14,7 @@
  *     never reconsiders it.
  */
 
-import { and, gte, inArray, isNull, or } from 'drizzle-orm'
+import { and, eq, gte, inArray, isNull, or } from 'drizzle-orm'
 import { devices } from '~~/server/database/schema/devices'
 import { disruptions } from '~~/server/database/schema/disruptions'
 import { isPushConfigured, sendPushToTokens } from './fcm-client'
@@ -107,7 +107,7 @@ export async function pushPendingDisruptions(): Promise<void> {
       await db
         .update(disruptions)
         .set({ pushedAt: new Date() })
-        .where(inArray(disruptions.id, [row.id]))
+        .where(eq(disruptions.id, row.id))
 
       console.info(
         `[disruption-push] Disruption ${row.id}: ${sent} sent, ${failed} failed, `
