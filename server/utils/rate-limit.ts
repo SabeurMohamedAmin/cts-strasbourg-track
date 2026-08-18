@@ -28,18 +28,40 @@ interface Window {
 
 const buckets = new Map<string, Window>()
 
-/** Throws 429 when the key exceeded its allowance for the current window. */
-export function assertWithinRateLimit(key: string): void {
-  const now = Date.now()
-  const bucket = buckets.get(key)
+/**
+ * Throws 429 when the key exceeded its allowance for the current window.
+ *
+ * Callers may pass a custom allowance/window to layer a stricter dedicated
+ * bucket on top of the global one (e.g. POST /devices, 9.7) — use a
+ * distinct key prefix so the buckets never collide.
+ */
+export function assertWithinRateLimit(
+  key: string,
+  maxRequests: number = MAX_REQUESTS_PER_WINDOW,
+  windowMs: number = WINDOW_MS,
+): void {
+  let limited = false
 
-  if (!bucket || now >= bucket.resetAt) {
-    buckets.set(key, { count: 1, resetAt: now + WINDOW_MS })
+  try {
+    const now = Date.now()
+    const bucket = buckets.get(key)
+
+    if (!bucket || now >= bucket.resetAt) {
+      buckets.set(key, { count: 1, resetAt: now + windowMs })
+      return
+    }
+
+    bucket.count += 1
+    limited = bucket.count > maxRequests
+  }
+  catch (error) {
+    // Fail OPEN: a limiter bug must never take the public API down.
+    console.error('[rate-limit] Counter failed, allowing the request', error)
     return
   }
 
-  bucket.count += 1
-  if (bucket.count > MAX_REQUESTS_PER_WINDOW) {
+  // Thrown outside the try so the 429 is never swallowed by the fail-open path.
+  if (limited) {
     throw createError({
       statusCode: 429,
       statusMessage: 'Too Many Requests',

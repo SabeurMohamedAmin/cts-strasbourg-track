@@ -209,6 +209,16 @@ STEP 8 - PARITY & MOBILE-PLUS FEATURES (backend)
          Persistence/forwarding to an analytics backend is a later step.
 
 ----------------------------------------------------------------
+STEP 9 - HARDENING BEFORE THE PUSH SENDER (8.4)
+----------------------------------------------------------------
+[x] 9.7  Devices table spam: POST /api/v1/devices is an unauthenticated
+         write. Before wiring the FCM sender (8.4), add stale-token
+         cleanup + a per-IP registration cap.
+         Done 2026-08-18: dedicated per-IP bucket (10 registrations/hour)
+         in devices.post.ts + server/plugins/devices-cleanup.ts prunes
+         tokens not refreshed in 180 days (daily sweep).
+
+----------------------------------------------------------------
 RULES
 ----------------------------------------------------------------
 - The Nitro backend is the ONLY consumer of the CTS API.

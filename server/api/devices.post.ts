@@ -10,10 +10,24 @@
  */
 import { db } from '~~/server/database'
 import { devices } from '~~/server/database/schema/devices'
+import { assertWithinRateLimit } from '~~/server/utils/rate-limit'
 import { deviceRegistrationSchema } from '~~/shared/schemas/api-v1'
 import type { DeviceRegistered } from '~~/shared/types/api-v1'
 
+/**
+ * 9.7: a handset registers once plus occasional favourite updates, so
+ * 10/hour per IP blocks spam floods without touching legitimate traffic
+ * (carrier-grade NAT still fits: registration is a rare event).
+ */
+const REGISTRATIONS_PER_HOUR = 10
+const HOUR_MS = 3_600_000
+
 export default defineEventHandler(async (event): Promise<DeviceRegistered> => {
+  // Stricter dedicated bucket on top of the global /api/v1 limit (9.7):
+  // this is an unauthenticated write, the cheapest thing to abuse.
+  const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'unknown'
+  assertWithinRateLimit(`devices:ip:${ip}`, REGISTRATIONS_PER_HOUR, HOUR_MS)
+
   const body = await readValidatedBody(event, deviceRegistrationSchema.parse)
 
   const [row] = await db
