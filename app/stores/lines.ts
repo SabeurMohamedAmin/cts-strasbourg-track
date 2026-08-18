@@ -61,7 +61,7 @@ export const useLinesStore = defineStore('lines', () => {
         mode === 'tram' || mode === 'bus',
       )
       const validRouteIds = new Set(lines.value.map(route => route.routeId))
-      activeModes.value = [...new Set(validModes)]
+      activeModes.value = [...new Set<'tram' | 'bus'>(validModes)]
       activeLineIds.value = new Set(
         saved.lineIds.filter((id: unknown): id is string =>
           typeof id === 'string' && validRouteIds.has(id),
