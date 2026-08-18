@@ -1,0 +1,74 @@
+{
+  "id": "1f2e3d4c-5b6a-4978-8c9d-0e1f2a3b4c5d",
+  "prevId": "014047c5-492a-435c-9238-7e969af72b25",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.disruptions": {
+      "name": "disruptions",
+      "schema": "",
+      "columns": {
+        "id": { "name": "id", "type": "serial", "primaryKey": true, "notNull": true },
+        "title": { "name": "title", "type": "text", "primaryKey": false, "notNull": true },
+        "description": { "name": "description", "type": "text", "primaryKey": false, "notNull": true },
+        "severity": { "name": "severity", "type": "text", "primaryKey": false, "notNull": true, "default": "'info'" },
+        "line_ids": { "name": "line_ids", "type": "jsonb", "primaryKey": false, "notNull": true, "default": "'[]'::jsonb" },
+        "stop_ids": { "name": "stop_ids", "type": "jsonb", "primaryKey": false, "notNull": true, "default": "'[]'::jsonb" },
+        "starts_at": { "name": "starts_at", "type": "timestamp", "primaryKey": false, "notNull": true },
+        "ends_at": { "name": "ends_at", "type": "timestamp", "primaryKey": false, "notNull": false },
+        "created_at": { "name": "created_at", "type": "timestamp", "primaryKey": false, "notNull": true, "default": "now()" }
+      },
+      "indexes": {
+        "disruptions_starts_at_idx": {
+          "name": "disruptions_starts_at_idx",
+          "columns": [ { "expression": "starts_at", "isExpression": false, "asc": true, "nulls": "last" } ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.devices": {
+      "name": "devices",
+      "schema": "",
+      "columns": {
+        "id": { "name": "id", "type": "serial", "primaryKey": true, "notNull": true },
+        "fcm_token": { "name": "fcm_token", "type": "text", "primaryKey": false, "notNull": true },
+        "platform": { "name": "platform", "type": "text", "primaryKey": false, "notNull": true },
+        "favorite_line_ids": { "name": "favorite_line_ids", "type": "jsonb", "primaryKey": false, "notNull": true, "default": "'[]'::jsonb" },
+        "created_at": { "name": "created_at", "type": "timestamp", "primaryKey": false, "notNull": true, "default": "now()" },
+        "updated_at": { "name": "updated_at", "type": "timestamp", "primaryKey": false, "notNull": true, "default": "now()" }
+      },
+      "indexes": {
+        "devices_fcm_token_idx": {
+          "name": "devices_fcm_token_idx",
+          "columns": [ { "expression": "fcm_token", "isExpression": false, "asc": true, "nulls": "last" } ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": { "columns": {}, "schemas": {}, "tables": {} }
+}
