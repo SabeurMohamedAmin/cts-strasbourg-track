@@ -106,13 +106,19 @@ STEP 3 - SECURITY & ACCESS CONTROL
 ----------------------------------------------------------------
 STEP 4 - REAL-TIME STRATEGY FOR MOBILE
 ----------------------------------------------------------------
-[~] 4.1  Verify /api/stream/vehicles (SSE) works from a non-browser
+[x] 4.1  Verify /api/stream/vehicles (SSE) works from a non-browser
          client (curl test with long-lived connection)
-         Tooling done 2026-08-18: `pnpm api:smoke` (scripts/smoke-v1.ts)
-         opens the stream from Node and asserts an `event: vehicles` frame
-         plus an `event: heartbeat`; it also walks every other v1 endpoint
-         and checks the /vehicles ETag 304 (5.2). Flip to [x] after a green
-         run against `pnpm dev` (and again against staging for 7.2).
+         VERIFIED 2026-08-18 with `pnpm api:smoke` (scripts/smoke-v1.ts):
+         17 passed / 0 failed against `pnpm dev`. The stream delivered an
+         `event: vehicles` frame plus an `event: heartbeat` over a 20 s
+         connection from Node (no browser), and /vehicles answered 304 on
+         revalidation (5.2). Re-run against staging for 7.2:
+           SMOKE_BASE_URL=https://<staging> pnpm api:smoke
+
+         Fixed on the way: /api/v1/* had NEVER resolved. The middleware URL
+         rewrite is ignored by Nitro's route matcher, and a routeRules proxy
+         broke SSE (204, raw res.write cannot cross a proxy hop). The alias
+         is now one-line re-export handlers in server/api/v1/**.
 [x] 4.2  Add heartbeat/keep-alive events so mobile detects drops
          Done: SSE stream emits `event: heartbeat` every 20 s
          (server/api/stream/vehicles.get.ts).
@@ -146,6 +152,17 @@ STEP 5 - PERFORMANCE & CACHING
          variant. ?fields= projection deferred until a real need is measured.
 [ ] 5.5  Load test the public endpoints (k6 or autocannon)
          TODO: needs a running server + a load-test tool.
+         First timings from `pnpm api:smoke` (2026-08-18, local dev, COLD
+         caches — the first call to each endpoint fills them):
+           /stops/{id}/arrivals   13111 ms  (next call to the same data: 50 ms)
+           /routes/shapes          1915 ms
+           /stops                   982 ms  (1361 platforms)
+           everything else          <200 ms
+         So the numbers to chase are cold-start costs, not steady state:
+         a fresh mobile install or a just-restarted server pays them.
+         Warm the arrivals/schedule caches on boot (see
+         server/plugins/warm-schedule-cache.ts) or measure them under load
+         before deciding on 5.4.
 
 ----------------------------------------------------------------
 STEP 6 - DEPLOYMENT & ENVIRONMENTS
@@ -228,6 +245,19 @@ STEP 9 - HARDENING BEFORE THE PUSH SENDER (8.4)
          Done 2026-08-18: dedicated per-IP bucket (10 registrations/hour)
          in devices.post.ts + server/plugins/devices-cleanup.ts prunes
          tokens not refreshed in 180 days (daily sweep).
+
+----------------------------------------------------------------
+OPEN DATA ISSUE (found 2026-08-18 by `pnpm api:smoke`)
+----------------------------------------------------------------
+The stops table has NO location_type=1 rows: `GET /stops?type=station`
+returns []. Consequences:
+  - /api/v1/stations/{slug}/schedule can never resolve a slug (it slugifies
+    station names), so the endpoint is untestable and unusable as shipped.
+  - Any station-level UI or Flutter screen built on ?type=station is empty.
+Check first:  select location_type, count(*) from stops group by 1;
+If every row is 0, scripts/import-gtfs.ts is not importing parent stations
+(or the CTS feed has none) — decide before the Flutter handshake, because
+the station timetable is part of the frozen v1 contract.
 
 ----------------------------------------------------------------
 RULES
