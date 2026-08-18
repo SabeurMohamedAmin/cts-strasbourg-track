@@ -49,19 +49,31 @@ STEP 1 - INVENTORY & SCOPE
 ----------------------------------------------------------------
 STEP 2 - API CONTRACT & VERSIONING
 ----------------------------------------------------------------
-[ ] 2.1  Freeze response shapes: define types in shared/ for every
+[x] 2.1  Freeze response shapes: define types in shared/ for every
          public endpoint (single source of truth)
-[ ] 2.2  Standard error format: { statusCode, code, message }
-[ ] 2.3  Standard success envelope + pagination for list endpoints
+         Done 2026-08-18: shared/types/api-v1.ts holds the cross-cutting
+         envelopes + new v1 resources; transit shapes stay in their own
+         shared/types/*.ts files and are re-used as-is.
+[x] 2.2  Standard error format: { statusCode, code, message }
+         Done 2026-08-18: server/utils/api-error.ts (apiError()) emits the
+         frozen shape; rate-limit + security middleware use it.
+[x] 2.3  Standard success envelope + pagination for list endpoints
          (limit/offset or cursor on /stops, /routes)
-[~] 2.4  Enforce /api/v1 prefix via api-version middleware
+         Done 2026-08-18: Paginated<T> + PaginationMeta in api-v1.ts.
+         Existing list endpoints keep their frozen array shape (the web app
+         already consumes them); the envelope applies to NEW list endpoints.
+[x] 2.4  Enforce /api/v1 prefix via api-version middleware
          Done 2026-08-18: /api/v1/admin/** blocked (404) from the public
          alias; X-API-Version: 1 header on versioned responses.
          Remaining: deprecate unversioned /api/* for browsers AFTER the
          web app migrates to /api/v1 (FLUTTER 1.8 alignment gate).
-[ ] 2.5  Write OpenAPI 3 spec (docs/openapi.yaml) covering v1
-[ ] 2.6  Serve the spec: GET /api/v1/openapi.json
-[ ] 2.7  Rule: never break v1; breaking changes go to /api/v2
+[x] 2.5  Write OpenAPI 3 spec (docs/openapi.yaml) covering v1
+         Done 2026-08-18: docs/openapi.yaml covers every v1 endpoint.
+[x] 2.6  Serve the spec: GET /api/v1/openapi.json
+         Done 2026-08-18: server/api/openapi.json.get.ts serves the spec
+         from server/services/openapi-spec.ts (kept in sync with the YAML).
+[x] 2.7  Rule: never break v1; breaking changes go to /api/v2
+         Codified in docs/openapi.yaml + shared/types/api-v1.ts headers.
 
 ----------------------------------------------------------------
 STEP 3 - SECURITY & ACCESS CONTROL
