@@ -16,6 +16,8 @@ const props = defineProps<{
   stops: RouteBarStop[]
   /** Brand color of the line, hex WITHOUT the leading '#'. */
   lineColor?: string
+  /** Short label of the active line (e.g. 'C3', 'A') to maintain line selection when navigating */
+  lineLabel?: string
 }>()
 
 const track = ref<HTMLElement | null>(null)
@@ -31,8 +33,13 @@ const stopsKey = computed(() =>
   props.stops.map(stop => `${stop.slug}${stop.isCurrent ? '*' : ''}`).join(),
 )
 
+/** URL query object to append to each station link to preserve line tracking. */
+const lineQuery = computed(() => {
+  if (!props.lineLabel) return undefined
+  return { line: props.lineLabel }
+})
+
 onMounted(() => {
-  console.log('[TODO Fix] StationRouteBar.vue - Files to fix: app/components/station/StationRouteBar.vue, app/composables/useStationLines.ts, app/pages/station/[slug].vue')
   centerCurrent(false)
 })
 
@@ -63,16 +70,14 @@ watch(stopsKey, () => centerCurrent(true), { flush: 'post' })
       @scroll.passive="updateArrows">
       <!-- NuxtLink prefetches the dots entering the viewport, and Nuxt then
            caches their timetable too (plugins/prefetch-station.client.ts). -->
-      <!-- TODO: Fix issue when switching between stations in station bar where lines mix up at stations serving multiple lines.
-           Fix: Pass and URL-decode selected line slug in URL query (e.g. /station/[slug]?slected-ligne=c3). Always use line slugs. -->
       <NuxtLink v-for="(stop, index) in stops"
         :key="`${stop.slug}-${index}`"
-        :to="`/station/${stop.slug}`"
-        class="stop "
+        :to="{ path: `/station/${stop.slug}`, query: lineQuery }"
+        class="stop"
         :class="{ 'stop--current': stop.isCurrent }"
         :title="stop.name"
         :aria-current="stop.isCurrent ? 'page' : undefined">
-        <span class="stop__dot "
+        <span class="stop__dot"
           aria-hidden="true" />
         <span class="stop__label text-label-x-small font-weight-thin font-italic">
           {{ stop.name }}

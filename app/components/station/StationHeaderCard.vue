@@ -28,6 +28,8 @@ defineProps<{
   stops: RouteBarStop[]
   /** Brand color of the selected line, hex WITHOUT the leading '#'. */
   lineColor?: string
+  /** Short label of the selected line, e.g. "C3" or "A". */
+  lineLabel?: string
   hasLiveData?: boolean
   isFavorite?: boolean
   /** The station has a platform we can add to a favourite list. */
@@ -109,6 +111,7 @@ const direction = defineModel<number>('direction', { required: true })
     <template v-if="stops.length">
       <StationRouteBar :stops="stops"
         :line-color="lineColor"
+        :line-label="lineLabel"
         class="mt-1" />
     </template>
   </v-card>

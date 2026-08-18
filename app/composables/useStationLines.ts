@@ -2,16 +2,39 @@ import type { Ref } from 'vue'
 import type { ScheduleDirection, ScheduleLine, StopScheduleResponse } from '~~/shared/types/schedule'
 
 /**
+ * Normalizes a line identifier (label or routeId) for case-insensitive comparison.
+ * Handles spaces and dashes cleanly (e.g. "C3" -> "c3", "c3" -> "c3", "C 3" -> "c3").
+ */
+export function normalizeLineSlug(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '')
+}
+
+/**
+ * Extracts and decodes the line query parameter from route query object.
+ * Checks 'line', 'ligne', 'selected-line', or 'slected-ligne' for full backward compatibility.
+ */
+export function getLineFromQuery(query: Record<string, any>): string {
+  const raw = query.line ?? query.ligne ?? query['selected-line'] ?? query['slected-ligne']
+  if (!raw) return ''
+  const value = Array.isArray(raw) ? raw[0] : String(raw)
+  try {
+    return decodeURIComponent(value).trim()
+  } catch {
+    return value.trim()
+  }
+}
+
+/**
  * Line and direction the reader is looking at, at one station.
- *
- * Both selections repair themselves: changing station picks the first line
- * served there, and changing line starts again from its first direction.
- *
- * TODO: Fix issue when switching between stations in station bar where lines mix up at stations with multiple/mixed lines.
- * Fix: URL decode and pass selected line slug via query parameter (e.g. ?slected-ligne=c3). Always use line slugs.
+ * Synchronizes the active line selection with the URL query parameter (`?line=...`)
+ * so line context is preserved when navigating between stations.
  */
 export function useStationLines(schedule: Ref<StopScheduleResponse | null>) {
-  console.log('[TODO Fix] useStationLines.ts - Files to fix for line selection issue: app/composables/useStationLines.ts, app/pages/station/[slug].vue, app/components/station/StationRouteBar.vue')
+  const route = useRoute()
+  const router = useRouter()
 
   /** Lines calling at this station. */
   const lines = computed<ScheduleLine[]>(() => schedule.value?.lines ?? [])
@@ -21,15 +44,63 @@ export function useStationLines(schedule: Ref<StopScheduleResponse | null>) {
   /** Index inside `currentLine.directions`, not a GTFS direction_id. */
   const selectedDirection = ref(0)
 
-  // The selected line is gone (another station): fall back to the first one.
-  watch(lines, (list) => {
-    if (!list.some(line => line.routeId === selectedRouteId.value))
-      selectedRouteId.value = list[0]?.routeId ?? ''
-  }, { immediate: true })
+  /**
+   * Synchronizes `selectedRouteId` with the URL query parameter or available lines.
+   */
+  function syncSelectedLine() {
+    const list = lines.value
+    if (!list.length) {
+      selectedRouteId.value = ''
+      return
+    }
 
-  // Another line means another pair of directions: start from the first.
-  watch(selectedRouteId, () => {
+    const requestedLine = getLineFromQuery(route.query)
+    if (requestedLine) {
+      const target = normalizeLineSlug(requestedLine)
+      const matched = list.find(line =>
+        normalizeLineSlug(line.lineLabel) === target
+        || normalizeLineSlug(line.routeId) === target,
+      )
+      if (matched) {
+        selectedRouteId.value = matched.routeId
+        return
+      }
+    }
+
+    // Keep current selection if it exists in the updated line list
+    if (selectedRouteId.value && list.some(line => line.routeId === selectedRouteId.value)) {
+      return
+    }
+
+    // Fallback: default to the first line served at this station
+    selectedRouteId.value = list[0]?.routeId ?? ''
+  }
+
+  // Synchronize selection whenever lines or line query changes
+  watch(
+    [lines, () => route.query.line, () => route.query.ligne],
+    () => {
+      syncSelectedLine()
+    },
+    { immediate: true },
+  )
+
+  // Reset direction and update URL query parameter when selected line changes
+  watch(selectedRouteId, (newRouteId) => {
     selectedDirection.value = 0
+
+    const matchedLine = lines.value.find(line => line.routeId === newRouteId)
+    if (matchedLine && import.meta.client) {
+      const currentQueryLine = getLineFromQuery(route.query)
+      if (normalizeLineSlug(currentQueryLine) !== normalizeLineSlug(matchedLine.lineLabel)) {
+        router.replace({
+          query: {
+            ...route.query,
+            line: matchedLine.lineLabel,
+          },
+        }).catch(() => {})
+      }
+    }
   })
 
   const currentLine = computed<ScheduleLine | null>(
@@ -54,3 +125,4 @@ export function useStationLines(schedule: Ref<StopScheduleResponse | null>) {
     directionLabels,
   }
 }
+

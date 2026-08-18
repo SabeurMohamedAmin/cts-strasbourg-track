@@ -21,10 +21,6 @@ const route = useRoute()
 const router = useRouter()
 const stationSlug = computed(() => String(route.params.slug ?? ''))
 
-// TODO: Fix issue when switching between stations in the station bar where lines mix up when a station serves multiple lines.
-// Fix: Implement URL decoding for selected line slug via query parameter (e.g. /station/[slug]?slected-ligne=c3). Always use slugs.
-console.log('[TODO Fix] station/[slug].vue - Files to fix for line mix-up issue: app/pages/station/[slug].vue, app/composables/useStationLines.ts, app/components/station/StationRouteBar.vue')
-
 // ── Data ──
 const { schedule, error: scheduleError, isSwitching } = await useStationSchedule(stationSlug)
 const {
@@ -111,6 +107,7 @@ useHead({ title: () => schedule.value ? `Horaires — ${schedule.value.stopName}
           :direction-labels="directionLabels"
           :stops="routeBarStops"
           :line-color="currentLine?.routeColor"
+          :line-label="currentLine?.lineLabel"
           :has-live-data="hasLiveData"
           :is-favorite="isFavorite"
           :can-favorite="!!stopId"
