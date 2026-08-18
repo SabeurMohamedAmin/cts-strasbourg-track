@@ -98,11 +98,24 @@ P2 — VALIDATE BACKEND (2–4 weeks, concurrent with CTS token wait)
         - Database — pool exhaustion errors in logs?
       Verify: No critical errors in server logs for 14 consecutive days.
 
-[ ] 10. GTFS FALLBACK TESTED
-        Action: Temporarily unset NUXT_CTS_API_TOKEN (or mock token failure).
-        Confirm /api/stream/vehicles returns simulated snapshot (scheduled status).
-        Confirm /api/stops/[id]/arrivals returns GTFS-derived departures.
-        Verify: Map renders with simulated vehicles; UI shows correct status label.
+[/] 10. GTFS FALLBACK TESTED
+        Code path VERIFIED in source (2026-08-18): poller no-ops without
+        NUXT_CTS_API_TOKEN (server/plugins/poller.ts); /api/vehicles falls
+        back to getScheduledSnapshot() and only degrades to an empty
+        'stale' snapshot when the DB is also unreachable
+        (server/api/vehicles.get.ts). Live + simulated are never mixed.
+        Remaining: RUN it once locally with a real DATABASE_URL:
+          1. In .env: NUXT_CTS_API_TOKEN=""  ->  pnpm dev
+          2. curl -s localhost:3000/api/vehicles
+             expect vehicles[].status == "scheduled" (non-empty array)
+          3. curl -N localhost:3000/api/stream/vehicles
+             expect first `event: vehicles` frame with scheduled statuses
+             + `event: heartbeat` every ~20 s
+          4. curl -s "localhost:3000/api/stops/<id>/arrivals"
+             expect arrivals[].status == "scheduled"
+          5. Browser: map renders simulated vehicles; connection chip
+             shows the scheduled/theoretical label.
+        Verify: all 5 checks pass; restore the token afterwards.
 
 -----------------------------------------------
 P3 — FLUTTER READINESS GATE (only after P0+P1+P2 completed)
