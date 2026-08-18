@@ -22,8 +22,9 @@ STEP 1 - INVENTORY & SCOPE
            GET /api/stops/nearby             geolocation
            GET /api/routes                   lines list
            GET /api/routes/[id]/shape        line shape
-           GET /api/routes/shapes            bulk shapes (!) MISSING
-                                             from docs/API.md - add it
+           GET /api/routes/shapes            bulk shapes (documented in
+                                             docs/API.md; was absent from
+                                             ROADMAP_FIXES #5 endpoint list)
            GET /api/vehicles                 REST fallback
            GET /api/stream/vehicles          SSE live positions
            GET /api/geocode                  address search
@@ -53,7 +54,11 @@ STEP 2 - API CONTRACT & VERSIONING
 [ ] 2.2  Standard error format: { statusCode, code, message }
 [ ] 2.3  Standard success envelope + pagination for list endpoints
          (limit/offset or cursor on /stops, /routes)
-[ ] 2.4  Enforce /api/v1 prefix via api-version middleware
+[~] 2.4  Enforce /api/v1 prefix via api-version middleware
+         Done 2026-08-18: /api/v1/admin/** blocked (404) from the public
+         alias; X-API-Version: 1 header on versioned responses.
+         Remaining: deprecate unversioned /api/* for browsers AFTER the
+         web app migrates to /api/v1 (FLUTTER 1.8 alignment gate).
 [ ] 2.5  Write OpenAPI 3 spec (docs/openapi.yaml) covering v1
 [ ] 2.6  Serve the spec: GET /api/v1/openapi.json
 [ ] 2.7  Rule: never break v1; breaking changes go to /api/v2

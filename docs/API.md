@@ -11,6 +11,11 @@
 - Every endpoint is also reachable under the `/api/v1/` prefix (server-side
   alias to the same handlers). **New clients should call `/api/v1/…`**: a
   future breaking change will ship as `/api/v2/` while v1 keeps working.
+- The admin area is **not** part of v1: `/api/v1/admin/**` always returns
+  `404`. Admin endpoints exist only unversioned under `/api/admin/**`,
+  behind session auth.
+- Responses served through the `/api/v1/` prefix carry an
+  `X-API-Version: 1` header.
 - All endpoints are `GET` and return JSON, except the SSE stream.
 - Times are ISO 8601 strings; the service timezone is `Europe/Paris`.
 - Colors (`routeColor`, `routeTextColor`) are hex strings **without** the leading `#`.
