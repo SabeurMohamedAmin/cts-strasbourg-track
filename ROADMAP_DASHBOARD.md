@@ -41,7 +41,8 @@ P1 — M1: DATA COLLECTION LAYER (~3 days)
       Tables:
         - events: id, type ('pageview' | 'api_call' | 'geo_granted' |
           'geo_skipped' | 'geo_never' | ...), path, visitorHash, referrer,
-          device (mobile/desktop from UA), country (optional), createdAt
+          device (mobile/desktop from UA), platform ('web' | 'android' |
+          'ios'), country (optional), createdAt
         - daily_stats: date, metric, dimension
           (e.g. 'path:/station/homme-de-fer'), count
       Indexes (DAY ONE, or rollups will crawl):
@@ -67,6 +68,9 @@ P1 — M1: DATA COLLECTION LAYER (~3 days)
         - navigator.sendBeacon on route change (survives tab close)
         - Custom events: geo_granted, geo_skipped, geo_never (wire into the
           home geolocation dialog gate), favorite_added, landmark_clicked
+        - /api/track (-> /api/v1/track) also accepts mobile events
+          authenticated by X-App-Token, with platform dimension
+          web|android|ios (see ROADMAP_NITRO_API 8.7)
       Verify: Events appear in DB while navigating; no console errors;
               beacon fires on tab close (check Network panel type=beacon).
 
@@ -111,8 +115,9 @@ P3 — M3: REALTIME + INSIGHTS (~3 days)
 -----------------------------------------------
 [ ] 12. REALTIME PANEL
       File: server/api/admin/realtime.get.ts (new)
-      Action: Active visitors (last 5 min) + current SSE connection count,
-        reusing server/services/realtime state; stream over the existing
+      Action: Active visitors (last 5 min) + current SSE connection count
+        split by platform (web | android | ios), reusing
+        server/services/realtime state; stream over the existing
         SSE pattern (see server/api/stream).
       Verify: Opening the app in a second browser bumps the live counter.
 

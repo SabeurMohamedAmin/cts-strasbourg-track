@@ -16,7 +16,8 @@ STEP 1 - INVENTORY & SCOPE
 [ ] 1.3  List endpoints the mobile app NEEDS (public transit data)
 [ ] 1.4  List endpoints to keep PRIVATE (admin/*, blog admin)
 [ ] 1.5  Decide the public surface: /api/v1/stops, /api/v1/routes,
-         /api/v1/stations, /api/v1/vehicles, /api/v1/geocode
+         /api/v1/stations, /api/v1/vehicles, /api/v1/geocode,
+         /api/v1/blog, /api/v1/disruptions
 
 ----------------------------------------------------------------
 STEP 2 - API CONTRACT & VERSIONING
@@ -78,7 +79,8 @@ STEP 6 - DEPLOYMENT & ENVIRONMENTS
 [ ] 6.3  Request logging with response times (extend
          server/plugins/request-logger.ts)
 [ ] 6.4  Error tracking on server (Sentry) with endpoint tags
-[ ] 6.5  CI: contract tests run on every MR (spec vs real responses)
+[ ] 6.5  Contract tests (spec vs real responses) run locally
+         before every MR (no pipeline - see issue #1)
 
 ----------------------------------------------------------------
 STEP 7 - FLUTTER HANDSHAKE
@@ -90,6 +92,27 @@ STEP 7 - FLUTTER HANDSHAKE
          (Android Doze, iOS background limits)
 [ ] 7.4  Pin the contract: any server change must regenerate the
          Dart client in the same MR cycle
+
+----------------------------------------------------------------
+STEP 8 - PARITY & MOBILE-PLUS FEATURES (backend)
+----------------------------------------------------------------
+[ ] 8.1  Public blog read API in v1: GET /api/v1/blog and
+         /api/v1/blog/[slug] (published only, ?locale=fr) -
+         same frozen-contract rule as transit endpoints
+[ ] 8.2  Disruptions: table + GET /api/v1/disruptions
+         (admin CRUD reuses the admin shell - see ADMIN roadmap
+         Phase 11)
+[ ] 8.3  Device registration: POST /api/v1/devices
+         (FCM token, platform android|ios, favorite line ids)
+[ ] 8.4  Push sender service (server-side FCM; key in
+         runtimeConfig, never in clients). Web push (VAPID)
+         shares the same disruptions source.
+[ ] 8.5  Widget endpoint: GET /api/v1/stops/:id/next-departures
+         (tiny payload, aggressive Cache-Control - home-screen widget)
+[ ] 8.6  Favorites: DECISION - v1 = local-only on both clients
+         (web localStorage / Flutter Hive); server sync = v2
+[ ] 8.7  Analytics: POST /api/v1/track accepts mobile events
+         (X-App-Token) with platform dimension web|android|ios
 
 ----------------------------------------------------------------
 RULES

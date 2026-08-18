@@ -273,6 +273,19 @@ which signs the upload server-side.
       (`dnt=1`, like the youtube-nocookie embed) with play badge on all
       video thumbnails.
 
+## Phase 11 — Disruptions banner CRUD (promoted from « Later »)
+
+Promoted because the disruptions feed now serves BOTH clients' banners
+(web + Flutter) and the push pipeline — see ROADMAP_NITRO_API Steps 8.2–8.4.
+
+- [ ] `disruptions` table + admin CRUD using the same admin shell pattern
+      (list + dialog form, Zod schemas in `shared/`, `requireAdmin`).
+- [ ] Public read endpoint `GET /api/v1/disruptions` joins the frozen
+      `/api/v1` contract (consumed by the web banner, Flutter 5.7, and the
+      push sender).
+- [ ] Note: the public blog API also joins the frozen `/api/v1` contract —
+      slug + locale params can never break (mobile depends on them).
+
 ## Later (out of scope for v1)
 
 - Second language live: add `'en'` to `SUPPORTED_LOCALES`, locale tabs in the
@@ -282,8 +295,8 @@ which signs the upload server-side.
 - Rich text / markdown sections instead of plain textareas.
 - Slug rename after publish (requires a redirects table).
 - Audit log of admin actions.
-- Manage other content types (landmarks, perturbation banners) with the same
-  admin shell.
+- Manage other content types (landmarks) with the same admin shell.
+  (Perturbation/disruptions banners: promoted to Phase 11.)
 
 ---
 
