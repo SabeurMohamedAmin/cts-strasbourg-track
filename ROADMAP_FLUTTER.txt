@@ -42,6 +42,22 @@ PHASE 2 - WEB APP POLISH (PWA)
 ----------------------------------------------------------------
 PHASE 3 - FLUTTER PROJECT SETUP (ANDROID / IOS ONLY)
 ----------------------------------------------------------------
+[ ] 3.0  READINESS GATE (moved from ROADMAP_FIXES #11, 2026-08-18).
+         Re-verify ALL sub-items before flutter create:
+         [ ] CTS SIRI token in hand + TOS permits app use
+             (token received May 2026 - TOS review still pending)
+         [ ] PWA deployed on Northflank + 50+ real users observed
+         [x] docs/API.md written + frozen (regenerate from OpenAPI
+             once NITRO Step 2 lands - keep one contract source)
+         [x] Non-infringing name chosen + updated in all files
+             (Strasbourg Bus-Trams Live)
+         [x] Data attribution present in UI
+         [ ] /api/stops, /api/vehicles, /api/stream/vehicles tested
+             from a mobile browser
+         [ ] 14-day production stability confirmed (FIXES #9)
+         [ ] GTFS fallback tested and working (FIXES #10)
+         [x] All FIXES P0 items completed (layout deduped, interval
+             fixed, lang set)
 [ ] 3.1  Install Flutter SDK + Android Studio + Xcode
 [ ] 3.2  Create flutter app (mobile/ folder or separate repo)
 [ ] 3.3  Choose state management (Riverpod recommended)

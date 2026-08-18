@@ -107,16 +107,9 @@ P2 — VALIDATE BACKEND (2–4 weeks, concurrent with CTS token wait)
 -----------------------------------------------
 P3 — FLUTTER READINESS GATE (only after P0+P1+P2 completed)
 -----------------------------------------------
-[ ] 11. FLUTTER READINESS CHECKLIST (re-verify before flutter create)
-        [ ] CTS SIRI token in hand + TOS permits app use
-        [ ] PWA deployed + 50+ real users observed
-        [ ] docs/API.md written + frozen
-        [ ] Non-infringing name chosen + updated in all files
-        [ ] Data attribution present in UI
-        [ ] /api/stops, /api/vehicles, /api/stream/vehicles tested from mobile browser
-        [ ] 14-day production stability confirmed
-        [ ] GTFS fallback tested and working
-        [ ] All P0 items completed (layout deduped, interval fixed, lang set)
+[x] 11. MOVED (2026-08-18) → ROADMAP_FLUTTER.txt Phase 3.0.
+        The readiness checklist now lives directly above the
+        flutter create steps it gates. Track progress there.
 
 -----------------------------------------------
 OPTIONAL / FUTURE
