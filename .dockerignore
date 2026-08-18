@@ -1,0 +1,19 @@
+node_modules
+.nuxt
+.output
+dist
+.git
+.gitlab-ci.yml
+.vscode
+.env
+.env.*
+!.env.example
+tests
+test-results
+playwright-report
+coverage
+docs
+refactore_map
+Données théoriques (GTFS)
+*.md
+netlify.toml

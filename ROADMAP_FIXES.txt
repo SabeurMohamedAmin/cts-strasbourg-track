@@ -68,10 +68,14 @@ P1 — BEFORE PWA DEPLOY / FLUTTER PREP (1–2 days)
 -----------------------------------------------
 P2 — VALIDATE BACKEND (2–4 weeks, concurrent with CTS token wait)
 -----------------------------------------------
-[ ] 7. DEPLOY PWA TO REAL DOMAIN
-      Action: Deploy Nuxt to production host (Vercel / Netlify / Fly.io).
-      Add .env with real DATABASE_URL (not placeholder).
-      Verify: /, /live, /plan, /favoris load without console errors.
+[/] 7. DEPLOY PWA TO REAL DOMAIN
+      Host chosen: NORTHFLANK (container deploy — Dockerfile at repo
+      root, 2026-08-18). Netlify config kept until Northflank verified.
+      Action: create Northflank service from the GitLab repo (dev-mobile
+      or main), set env vars (see .env.example + runtimeConfig), attach
+      Postgres, point domain.
+      Verify: /, /live, /plan, /favoris load without console errors;
+      /api/stream/vehicles holds a long-lived SSE connection.
 
 [/] 8. CTS SIRI TOKEN REQUESTED
       URL: https://api.cts-strasbourg.eu
