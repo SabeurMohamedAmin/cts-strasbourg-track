@@ -238,11 +238,11 @@
               class="mb-2"
             >
               <template #selection="{ item }">
-                <v-icon :icon="item.raw" class="mr-2" />
-                {{ item.raw }}
+                <v-icon :icon="item" class="mr-2" />
+                {{ item }}
               </template>
               <template #item="{ props: itemProps, item }">
-                <v-list-item v-bind="itemProps" :prepend-icon="item.raw" />
+                <v-list-item v-bind="itemProps" :prepend-icon="item" />
               </template>
             </v-select>
             <v-text-field
