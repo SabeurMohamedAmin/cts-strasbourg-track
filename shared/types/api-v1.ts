@@ -140,7 +140,3 @@ export interface TrackEvent {
 export interface TrackAccepted {
   ok: true
 }
-
-// Re-export the served-lines shape so widget/departures consumers can
-// reference it from this single entry point if they prefer.
-export type { StopServedLine }
