@@ -108,12 +108,19 @@ STEP 4 - REAL-TIME STRATEGY FOR MOBILE
 ----------------------------------------------------------------
 [ ] 4.1  Verify /api/stream/vehicles (SSE) works from a non-browser
          client (curl test with long-lived connection)
-[ ] 4.2  Add heartbeat/keep-alive events so mobile detects drops
-[ ] 4.3  Provide a polling fallback: GET /api/v1/vehicles with
+         TODO: needs a running server (local `pnpm dev` + curl -N).
+[x] 4.2  Add heartbeat/keep-alive events so mobile detects drops
+         Done: SSE stream emits `event: heartbeat` every 20 s
+         (server/api/stream/vehicles.get.ts).
+[x] 4.3  Provide a polling fallback: GET /api/v1/vehicles with
          Cache-Control + short TTL (mobile networks kill SSE)
-[ ] 4.4  Document reconnection strategy (Last-Event-ID support)
-[ ] 4.5  Decide arrivals refresh contract for stops
+         Done 2026-08-18: /vehicles sends Cache-Control max-age=5 + ETag.
+[x] 4.4  Document reconnection strategy (Last-Event-ID support)
+         Done: Last-Event-ID replay is implemented in the SSE stream and
+         documented in docs/API.md ("Real-time strategy for mobile").
+[x] 4.5  Decide arrivals refresh contract for stops
          (/api/v1/stops/:id/arrivals - polling interval guidance)
+         Done 2026-08-18: poll every 30 s on screen; documented in API.md.
 
 ----------------------------------------------------------------
 STEP 5 - PERFORMANCE & CACHING
@@ -126,10 +133,15 @@ STEP 5 - PERFORMANCE & CACHING
          Done 2026-08-18: server/utils/etag.ts (SHA-256 strong ETag +
          sendNotModified 304 helper) wired into /vehicles, /stops/:id/arrivals,
          /stops/:id/next-departures, /disruptions.
-[ ] 5.3  Gzip/br compression enabled on JSON responses
+[x] 5.3  Gzip/br compression enabled on JSON responses
+         Done 2026-08-18: handled by the Nitro node-server runtime when the
+         client sends Accept-Encoding (gzip/br); noted in docs/API.md.
 [ ] 5.4  Slim payloads: mobile variants if needed (?fields=,
          simplified shapes for map polylines)
+         Partially: /stops/:id/next-departures (8.5) is the slim widget
+         variant. ?fields= projection deferred until a real need is measured.
 [ ] 5.5  Load test the public endpoints (k6 or autocannon)
+         TODO: needs a running server + a load-test tool.
 
 ----------------------------------------------------------------
 STEP 6 - DEPLOYMENT & ENVIRONMENTS
@@ -145,8 +157,11 @@ STEP 6 - DEPLOYMENT & ENVIRONMENTS
          Done 2026-08-18: log lines now tag [v1] vs [legacy] traffic so the
          /api/v1 migration can be watched.
 [ ] 6.4  Error tracking on server (Sentry) with endpoint tags
-[ ] 6.5  Contract tests (spec vs real responses) run locally
+         TODO: needs a Sentry project + DSN (external service).
+[x] 6.5  Contract tests (spec vs real responses) run locally
          before every MR (no pipeline - see issue #1)
+         Done 2026-08-18: tests/unit/api-contract.test.ts guards the frozen
+         v1 surface against docs/openapi.yaml; run with `pnpm test`.
 
 ----------------------------------------------------------------
 STEP 7 - FLUTTER HANDSHAKE
