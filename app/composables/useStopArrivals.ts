@@ -18,6 +18,7 @@
  * full of live arrivals, and the first client render disagreed with the DOM.
  */
 import type { StopArrivalsResponse } from '~~/shared/types/stop'
+import { apiV1 } from '~/utils/api'
 
 export interface StopArrivalsOptions {
   /** Max results returned by the API (server caps at 30, default 10). */
@@ -30,7 +31,7 @@ export function useStopArrivals(stopId: MaybeRef<string | null>, options: StopAr
   const id = toRef(stopId)
 
   const { data, pending, error, refresh } = useFetch<StopArrivalsResponse>(
-    () => `/api/stops/${id.value}/arrivals`,
+    () => apiV1(`/stops/${id.value}/arrivals`),
     {
       immediate: false,
       watch: false,

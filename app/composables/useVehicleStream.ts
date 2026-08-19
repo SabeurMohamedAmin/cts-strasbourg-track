@@ -1,6 +1,7 @@
 import { VehicleSnapshotSchema } from '~~/shared/schemas/vehicle'
 import { useVehiclesStore } from '~/stores/vehicles'
 import { usePageVisibility } from '~/composables/usePageVisibility'
+import { apiV1 } from '~/utils/api'
 
 /** Consider the stream broken when nothing (snapshot or heartbeat) arrived for this long. */
 const STALE_AFTER_MS = 60_000
@@ -45,7 +46,7 @@ export function useVehicleStream() {
     store.setConnection('connecting')
     lastReceivedAt = Date.now()
 
-    source = new EventSource('/api/stream/vehicles')
+    source = new EventSource(apiV1('/stream/vehicles'))
 
     source.onopen = () => {
       lastReceivedAt = Date.now()
@@ -81,7 +82,7 @@ export function useVehicleStream() {
     if (fallbackInFlight) return
     fallbackInFlight = true
     try {
-      const snapshot = VehicleSnapshotSchema.parse(await $fetch('/api/vehicles'))
+      const snapshot = VehicleSnapshotSchema.parse(await $fetch(apiV1('/vehicles')))
       store.applySnapshot(snapshot)
       lastReceivedAt = Date.now()
     }

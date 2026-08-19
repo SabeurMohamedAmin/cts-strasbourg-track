@@ -3,6 +3,7 @@
   import BlogSidebar from '~/components/blog/BlogSidebar.vue'
   import { SUPPORTED_LOCALES } from '~~/shared/types/locale'
   import type { BlogArticleResponse } from '~~/shared/types/blog'
+  import { apiV1 } from '~/utils/api'
 
   const route = useRoute()
 
@@ -13,7 +14,7 @@
   // One API call brings the article, its sections, its gallery and
   // the previous / next neighbours — all read from the database.
   const { data, error } = await useFetch<BlogArticleResponse>(
-    `/api/blog/${String(route.params.slug)}`,
+    apiV1(`/blog/${String(route.params.slug)}`),
     { query: isPreview ? { preview: '1' } : undefined },
   )
 

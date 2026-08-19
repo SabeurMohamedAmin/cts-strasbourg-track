@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia'
 import type { MultiLineString } from 'geojson'
+import { apiV1 } from '~/utils/api'
 
-/** One route geometry as served by GET /api/routes/shapes. */
+/** One route geometry as served by GET /api/v1/routes/shapes. */
 export interface RouteShape {
   routeId: string
   routeColor: string
@@ -28,7 +29,7 @@ export const useLinesStore = defineStore('lines', () => {
 
   async function fetchLines() {
     if (lines.value.length) return
-    const data = await $fetch<Route[]>('/api/routes')
+    const data = await $fetch<Route[]>(apiV1('/routes'))
     lines.value = data
     if (!restoreFilters()) setModeLines('tram', true)
   }
@@ -40,7 +41,7 @@ export const useLinesStore = defineStore('lines', () => {
    */
   async function fetchShapes(): Promise<RouteShape[]> {
     if (shapes.value.length) return shapes.value
-    shapesPromise ??= $fetch<RouteShape[]>('/api/routes/shapes')
+    shapesPromise ??= $fetch<RouteShape[]>(apiV1('/routes/shapes'))
     try {
       shapes.value = await shapesPromise
     }

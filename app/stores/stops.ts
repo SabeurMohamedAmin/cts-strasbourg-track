@@ -14,6 +14,7 @@
  *   hydrateFavorites()  — call once on app mount to restore from localStorage
  */
 import { defineStore } from 'pinia'
+import { apiV1 } from '~/utils/api'
 import { searchStops } from '~/utils/stopSearch'
 
 export interface Stop {
@@ -56,7 +57,7 @@ export const useStopsStore = defineStore('stops', () => {
   async function fetchStops() {
     if (stops.value.length) return stops.value
     if (!stopsRequest) {
-      stopsRequest = $fetch<Stop[]>('/api/stops')
+      stopsRequest = $fetch<Stop[]>(apiV1('/stops'))
         .then((data) => {
           stops.value = data
           return data

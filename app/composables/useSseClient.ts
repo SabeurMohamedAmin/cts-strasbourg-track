@@ -8,7 +8,7 @@
  *   - Cleans up on component unmount.
  *
  * Usage:
- *   const { data, status } = useSseClient('/api/live/vehicles')
+ *   const { data, status } = useSseClient('/api/v1/stream/vehicles')
  */
 import { usePageVisibility } from '~/composables/usePageVisibility'
 

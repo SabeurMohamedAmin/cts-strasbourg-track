@@ -1,5 +1,6 @@
 import type { ComputedRef } from 'vue'
 import type { StopScheduleResponse } from '~~/shared/types/schedule'
+import { apiV1 } from '~/utils/api'
 
 /** Cache key of one station, shared with plugins/prefetch-station.client.ts. */
 export function stationScheduleKey(slug: string): string {
@@ -8,7 +9,7 @@ export function stationScheduleKey(slug: string): string {
 
 /** Timetable endpoint of one station. */
 export function stationScheduleUrl(slug: string): string {
-  return `/api/stations/${encodeURIComponent(slug)}/schedule`
+  return apiV1(`/stations/${encodeURIComponent(slug)}/schedule`)
 }
 
 /**

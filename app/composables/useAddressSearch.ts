@@ -1,6 +1,6 @@
 /**
  * useAddressSearch — geocodes free text (addresses, streets, cities) through
- * our /api/geocode proxy (French national address database — BAN).
+ * our /api/v1/geocode proxy (French national address database — BAN).
  *
  * Mirrors the useStopSearch shape (query in, results out) so StopSearch can
  * drive both searches from the same debounced input.
@@ -9,6 +9,7 @@
  * responses: only the latest request is allowed to write results.
  */
 import type { GeocodeResult } from '~~/shared/types/geocode'
+import { apiV1 } from '~/utils/api'
 
 const clientAddressCache = new Map<string, GeocodeResult[]>()
 
@@ -39,7 +40,7 @@ export function useAddressSearch() {
 
     loading.value = true
     try {
-      const data = await $fetch<GeocodeResult[]>('/api/geocode', { query: { q } })
+      const data = await $fetch<GeocodeResult[]>(apiV1('/geocode'), { query: { q } })
       if (id !== requestId) return // stale response — a newer query is in flight
       clientAddressCache.set(q, data)
       results.value = data

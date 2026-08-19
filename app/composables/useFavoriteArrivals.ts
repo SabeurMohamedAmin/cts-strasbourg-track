@@ -1,4 +1,5 @@
 import type { StopArrivalsResponse } from '~~/shared/types/stop'
+import { apiV1 } from '~/utils/api'
 
 const CACHE_TTL_MS = 20_000
 
@@ -40,7 +41,7 @@ export function useFavoriteArrivals() {
     const requestKey = `${missingIds.slice().sort().join(',')}:${limit}:${window}:${force ? Date.now() : ''}`
     let request = pendingRequests.get(requestKey)
     if (!request) {
-      request = $fetch<Record<string, StopArrivalsResponse | null>>('/api/stops/arrivals', {
+      request = $fetch<Record<string, StopArrivalsResponse | null>>(apiV1('/stops/arrivals'), {
         query: queryParams,
       }).finally(() => pendingRequests.delete(requestKey))
       pendingRequests.set(requestKey, request)

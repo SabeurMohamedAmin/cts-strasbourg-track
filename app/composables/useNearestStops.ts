@@ -12,6 +12,7 @@
  * the walking-distance chip without any extra calculation.
  */
 import { useStopsStore } from '~/stores/stops'
+import { apiV1 } from '~/utils/api'
 
 export function useNearestStops() {
   const nearest = ref<Array<{ stopId: string; stopName: string; distanceM: number }>>([])
@@ -26,7 +27,7 @@ export function useNearestStops() {
     error.value = null
     try {
       const data = await $fetch<Array<{ stopId: string; stopName: string; distanceM: number }>>(
-        '/api/stops/nearby',
+        apiV1('/stops/nearby'),
         { query: { lat, lon, limit, radius } },
       )
       nearest.value = data

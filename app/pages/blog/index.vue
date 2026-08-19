@@ -3,12 +3,13 @@
   import BlogFilterBar from '~/components/blog/BlogFilterBar.vue'
   import BlogArticleCard from '~/components/blog/BlogArticleCard.vue'
   import { SORT_OPTIONS, type BlogArticleSummary, type BlogCategorySummary, type SortKey } from '~~/shared/types/blog'
+  import { apiV1 } from '~/utils/api'
 
   /** Number of article cards shown per page. */
   const ARTICLES_PER_PAGE = 6
 
-  // Articles come from the database through GET /api/blog.
-  const { data: articles } = await useFetch<BlogArticleSummary[]>('/api/blog')
+  // Articles come from the database through GET /api/v1/blog.
+  const { data: articles } = await useFetch<BlogArticleSummary[]>(apiV1('/blog'))
 
   /** Fetched articles, or an empty list while unavailable. */
   const allArticles = computed(() => articles.value ?? [])
