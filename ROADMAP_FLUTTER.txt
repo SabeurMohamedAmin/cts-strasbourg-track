@@ -24,9 +24,31 @@ PHASE 1 - FOUNDATION & SHARED API LAYER
 [ ] 1.5  Write an OpenAPI spec describing every endpoint
 [ ] 1.6  Version the API (/api/v1/...)
 [ ] 1.7  Add basic API tests in tests/
-[ ] 1.8  WEB ALIGNMENT GATE: web app consumes ONLY /api/v1
+[~] 1.8  WEB ALIGNMENT GATE: web app consumes ONLY /api/v1
          (moved from Phase 2.1 - must happen BEFORE the contract
          freeze, so both clients share one surface)
+         2026-08-19 (dev-mobile): app/utils/api.ts now holds the only
+         copy of the prefix. apiV1() is used by useStopArrivals,
+         useNearestStops, useStationSchedule, useAddressSearch,
+         useFavoriteArrivals, useVehicleStream (SSE + REST fallback),
+         the stops and lines stores, both blog pages and pages/index.vue.
+         Admin stays unversioned on purpose: /api/v1/admin/** is 404.
+         No direct fetch found in useStopSearch, useNextDepartures,
+         useStationLines, stores/vehicles, useMapFraming, useNetworkLayers,
+         useFocusStationsArea, useLandmarkLayer, StopSheet, MapView,
+         prefetch-station.client (reuses stationScheduleUrl), pages/live,
+         station/[slug], trajet, favoris/index and favoris/gerer: they all
+         read through the migrated stores and composables.
+         Remaining before ticking [x]:
+           grep -rn "'/api/" app/ --include=*.ts --include=*.vue
+         (large SFCs were only partly audited by hand), then deprecate
+         unversioned /api/* for browsers as NITRO 2.4 describes.
+         FOUND: /api/eurometropole/bounds has NO web caller. The map frame
+         is the static bbox in app/utils/map-constants.ts, so the endpoint
+         is only useful to Flutter, if at all.
+         NOTE: Phase 1.1-1.7 above are still [ ] here but
+         ROADMAP_NITRO_API records them as done. This file exists in BOTH
+         repos and the two copies have drifted.
 
 ----------------------------------------------------------------
 PHASE 2 - WEB APP POLISH (PWA)
