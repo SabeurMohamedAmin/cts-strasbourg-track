@@ -9,6 +9,7 @@ import { useStopsStore } from '~/stores/stops'
 import { minutesUntil } from '~/utils/format'
 import { searchStops } from '~/utils/stopSearch'
 import { slugifyStopName } from '~~/shared/utils/slug'
+import { apiV1 } from '~/utils/api'
 
 const stopsStore = useStopsStore()
 const selectedLandmark = ref<string | null>(null)
@@ -310,7 +311,7 @@ async function fetchDepartures(sources = getDepartureSources(), { silent = false
           // the server instead of the browser's HTTP cache.
           queryParams._t = Date.now()
         }
-        const response = await $fetch<StopArrivalsResponse>(`/api/stops/${encodeURIComponent(station.stopId)}/arrivals`, {
+        const response = await $fetch<StopArrivalsResponse>(apiV1(`/stops/${encodeURIComponent(station.stopId)}/arrivals`), {
           query: queryParams,
         })
         return {

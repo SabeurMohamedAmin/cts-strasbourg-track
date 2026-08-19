@@ -2,7 +2,7 @@
   PLAN — network plan page (same design language as the home page).
   Sections top to bottom: hero heading → quick actions → mode filter →
   line directory (real GTFS lines with their official colours).
-  Data comes from useLinesStore (GET /api/routes).
+  Data comes from useLinesStore (GET /api/v1/routes).
 -->
 <script setup lang="ts">
   import { useLinesStore } from '~/stores/lines'
