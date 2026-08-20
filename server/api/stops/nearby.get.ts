@@ -1,4 +1,5 @@
 import { getAllStops } from '~~/server/services/stops-cache'
+import { getStopModes } from '~~/server/services/stop-modes'
 
 const R = 6_371_000 // Earth radius in metres
 
@@ -23,7 +24,9 @@ export default defineEventHandler(async (event) => {
 
   const latN = parseFloat(lat as string)
   const lonN = parseFloat(lon as string)
-  const limitN = Math.min(20, Math.max(1, parseInt(limit as string, 10)))
+  // 30 matches nearbyFetchLimit in the Flutter client: the mobile home page
+  // fetches candidates for its client-side tram/bus filter in one request.
+  const limitN = Math.min(30, Math.max(1, parseInt(limit as string, 10)))
   const radiusN = Math.min(20_000, Math.max(50, parseFloat(radius as string)))
 
   if (![latN, lonN, limitN, radiusN].every(Number.isFinite)
@@ -31,9 +34,9 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Invalid nearby-stop parameters' })
   }
 
-  // Stops only change on GTFS imports, so they are served from the shared
-  // in-memory cache instead of a full-table query on every location request.
-  const all = await getAllStops()
+  // Stops and served lines only change on GTFS imports, so both come from
+  // shared in-memory caches instead of heavy queries on every location fix.
+  const [all, membershipByStop] = await Promise.all([getAllStops(), getStopModes()])
 
   // Cheap bounding-box pre-filter: rules out most of the network with two
   // comparisons before paying for the trigonometric haversine distance.
@@ -49,7 +52,17 @@ export default defineEventHandler(async (event) => {
   // A physical station often has one GTFS platform per direction. Keep the
   // closest platform as the selectable representative so duplicate directions
   // do not consume the requested station limit.
-  const stationsByKey = new Map<string, typeof nearbyPlatforms[number]>()
+  //
+  // Routes and modes are unioned across every platform of the station: a
+  // tram/bus interchange must not be labelled tram-only just because its
+  // closest platform is the tram one. The mobile transport filter reads
+  // `modes`, so a row without it would be dropped by the client.
+  const stationsByKey = new Map<string, {
+    stop: typeof nearbyPlatforms[number]
+    routes: Set<string>
+    modes: Set<string>
+  }>()
+
   for (const platform of nearbyPlatforms) {
     const normalizedName = platform.stopName
       .normalize('NFD')
@@ -57,8 +70,20 @@ export default defineEventHandler(async (event) => {
       .toLocaleLowerCase('fr')
       .trim()
     const key = platform.parentStation || normalizedName
-    if (!stationsByKey.has(key)) stationsByKey.set(key, platform)
+
+    const entry = stationsByKey.get(key)
+      ?? { stop: platform, routes: new Set<string>(), modes: new Set<string>() }
+
+    const membership = membershipByStop.get(platform.stopId)
+    for (const route of membership?.routes ?? []) entry.routes.add(route)
+    for (const mode of membership?.modes ?? []) entry.modes.add(mode)
+
+    stationsByKey.set(key, entry)
   }
 
-  return [...stationsByKey.values()].slice(0, limitN)
+  return [...stationsByKey.values()].slice(0, limitN).map(entry => ({
+    ...entry.stop,
+    routes: [...entry.routes],
+    modes: [...entry.modes],
+  }))
 })
