@@ -69,8 +69,8 @@ function locateNearestStation() {
 }
 
 useSeoMeta({
-  title: 'Plans du réseau CTS',
-  description: 'Consultez le plan simplifié du réseau de bus et tram de Strasbourg.',
+  title: 'Plans de Notre Reseau Transport',
+  description: 'voici notre Plans et Lignes de Bus & Tram du reseau CTS Strasbourg.',
 })
 </script>
 
@@ -80,9 +80,9 @@ useSeoMeta({
       class="plans-container pa-1">
       <header class="d-flex flex-column flex-sm-row align-sm-center justify-space-between ga-4 px-4 mt-5 mb-2">
         <div>
-          <h1 class="text-title-large font-weight-bold">Plans du réseau</h1>
+          <h1 class="text-title-large font-weight-bold">Plans de Notre Reseau Transport</h1>
           <p class="text-body-medium text-medium-emphasis mt-1 mb-0">
-            Plan simplifié des lignes de bus et tram du réseau CTS.
+            voici notre Plans et Lignes de Bus & Tram du reseau CTS Strasbourg.
           </p>
         </div>
 
