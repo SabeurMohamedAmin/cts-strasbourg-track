@@ -1,0 +1,51 @@
+route_id,route_short_name,route_long_name,route_desc,route_type,route_color,route_text_color,network_id
+02,2,"Lingolsheim Gare - Jardin des Deux Rives",,3,E10D19,FFFFFF,CTS
+10,10,"Gare Centrale - Musée d'Art Moderne - Gallia",,3,F8B705,000000,CTS
+12,12,"Lingolsheim Alouettes - Entzheim Ouest",,3,89CDD1,000000,CTS
+15,15,"République -  Boecklin",,3,89CDD1,000000,CTS
+17,17,"Rotonde - Mittelhausbergen Mittelberg",,3,F3C6DB,000000,CTS
+18,18,"Rotonde - via Marché Gare",,3,F8B705,000000,CTS
+22,22,"Lingolsheim Alouettes - Holtzheim Ouest",,3,89CDD1,000000,CTS
+30,30,"Ampère -Robertsau Sainte Anne/ Robertsau Chasseurs",,3,FFDC08,000000,CTS
+31,31,"Ampère - Baggersee",,3,F3C6DB,000000,CTS
+40,40,"Unterelsau - Neuhof Ganzau",,3,FFDC08,000000,CTS
+42,42,"Entzheim Gare - Entzheim Ouest",,3,C273A8,FFFFFF,CTS
+43,43,"Entzheim Gare - Holtzheim Ouest",,3,E75113,FFFFFF,CTS
+44,44,"Entzheim Gare - Kolbsheim Mairie",,3,729ECF,FFFFFF,CTS
+45,45,"Lingolsheim Alouettes - Poteries",,3,9A5527,FFFFFF,CTS
+57,57,"Baggersee  - Geispolsheim Ouest / Blaesheim Ouest",,3,EC7007,000000,CTS
+60,60,"Wacken - Mundolsheim Découvertes",,3,EC7007,FFFFFF,CTS
+62,62,"Geispolsheim Gare - Graff. Digue / Lipsheim Centre",,3,BDD753,000000,CTS
+63,63,"Campus d'Illkirch - Lipsheim Gare",,3,7DBBDF,000000,CTS
+64,64,"Campus d'Illkirch - Lingolsheim Alouettes",,3,EA5297,FFFFFF,CTS
+67,67,"Baggersee - Graffenstaden Digue / Plobsheim Est",,3,6DB122,FFFFFF,CTS
+70,70,"Rob. Renaissance / Poteries - Wolfisheim Stade",,3,F8B705,000000,CTS
+71,71,"Les Halles - Eckwersheim Hippodrome",,3,73B3DE,FFFFFF,CTS
+72,72,"République - La Wantzenau Le Golf",,3,F3C6DB,000000,CTS
+73,73,"Les Halles - Lampertheim Alisiers",,3,B5833C,FFFFFF,CTS
+74,74,"Hoenheim Gare-Reichstett/Vendenheim/EcoParc Rhénan",,3,008231,FFFFFF,CTS
+75,75,"Les Halles -Mundolsheim / Vendenheim / Eckwersheim",,3,9FC204,000000,CTS
+76,76,"Les Halles - Reichstett Rue de Paris",,3,C273A8,FFFFFF,CTS
+87-1723,Remplacement-A/E,"Etoile Bourse - Illkirch Graffenstaden",,3,E10D19,FFFFFF,CTS
+88-1730,Remplacement-B/F,"Gare Centrale - Elsau / Comtes",,3,009EE0,FFFFFF,CTS
+89-1742,14Juillet,"Lycée Couffignal - Kibitzenau",,3,C273A8,FFFFFF,CTS
+89-1405,Braderie,"Etoile Polygone - Pont Saint-Nicolas",,3,C273A8,FFFFFF,CTS
+A,A,"Parc des Sports - Illkirch Graffenstaden",,0,E10D19,FFFFFF,CTS
+B,B,"Hoenheim Gare - Lingolsheim Tiergaertel",,0,009EE0,FFFFFF,CTS
+C,C,"Gare Centrale - Neuhof Rodolphe Reuss",,0,F29400,FFFFFF,CTS
+C1,C1,"Lingolsheim Alouettes - Robertsau Lamproie",,3,22AE84,FFFFFF,CTS
+C3,C3,"Les Halles - Hoenheim Gare",,3,9FC204,000000,CTS
+C4,C4,"Illkirch Fort Uhrich - Schiltigheim Campus",,3,F08118,FFFFFF,CTS
+C5,C5,"Koenigshoffen Sud - Schiltigheim Le Marais",,3,25715C,FFFFFF,CTS
+C6,C6,"Pont Phario - Les Halles",,3,7D5D9F,FFFFFF,CTS
+C7,C7,"Baggersee-L. Aubrac/La Rochelle/Port Autonome Sud",,3,008A27,FFFFFF,CTS
+C8,C8,"Pont Saint-Nicolas - Neuhof Stockfeld",,3,88CDD5,000000,CTS
+C9,C9,"Les Halles - Hoenheim Gare / Vendenheim Gare",,3,F26640,FFFFFF,CTS
+D,D,"Poteries - Port du Rhin / Kehl Rathaus",,0,009933,FFFFFF,CTS
+E,E,"Robertsau L'Escale - Campus d'Illkirch",,0,9085BA,FFFFFF,CTS
+F,F,"Wolfisheim Henri Rendu - Place d'Islande",,0,97BF0D,FFFFFF,CTS
+G,G,"Rotterdam - Gare - Espace Européen de l'Entreprise",,3,F6C900,000000,CTS
+H,H,"Gare Centrale - Parlement Européen",,3,A62341,FFFFFF,CTS
+N1,N1,"Pont Saint-Nicolas - Pont Phario",,3,B55C38,FFFFFF,CTS
+N2,N2,"Hoenheim Gare - Campus d'Illkirch",,3,7F0047,FFFFFF,CTS
+N3,N3,"Kehl Bahnhof - Mathieu Zell",,3,2D3E58,FFFFFF,CTS

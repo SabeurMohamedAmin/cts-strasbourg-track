@@ -1,0 +1,54 @@
+/*
+  Global reset: make the entire app fill the viewport without scrollbars.
+  The map canvas is the only scrollable surface (via MapLibre's own pan/zoom).
+*/
+
+
+/* Vuetify injects .v-application as the root wrapper */
+
+
+/* v-main must grow to fill all remaining space */
+
+
+
+/* ── Glassmorphism utilities ────────────────────────────────────────────
+   Frosted-glass look for surfaces floating above the map.
+
+   Usage:
+     class="glass-surface"                        → default glass
+                                                    (small floating controls)
+     class="glass-surface glass-surface--strong"  → more opaque + stronger
+                                                    blur (sheets, drawer —
+                                                    anything text-heavy)
+
+   Theme-aware: --v-theme-surface is an RGB triplet that follows the active
+   Vuetify theme, so the glass adapts to light AND dark mode automatically.
+*/
+.glass-surface {
+  background: rgba(var(--v-theme-surface), 0.62) !important;
+  backdrop-filter: blur(16px) saturate(1.5);
+  -webkit-backdrop-filter: blur(16px) saturate(1.5);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.14) !important;
+}
+
+.glass-surface--strong {
+  background: rgba(var(--v-theme-surface), 0.8) !important;
+  backdrop-filter: blur(22px) saturate(1.6);
+  -webkit-backdrop-filter: blur(22px) saturate(1.6);
+}
+
+/* Dark theme: bright white borders glow too much — tone them down */
+.v-theme--dark .glass-surface {
+  border-color: rgba(255, 255, 255, 0.09);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Fallback for browsers without backdrop-filter:
+   near-opaque surface so text stays readable over the map */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass-surface,
+  .glass-surface--strong {
+    background: rgba(var(--v-theme-surface), 0.95) !important;
+  }
+}

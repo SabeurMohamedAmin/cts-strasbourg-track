@@ -1,0 +1,9 @@
+<svg xmlns="https://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="CTS Strasbourg">
+  <rect width="512" height="512" rx="112" fill="#c8102e"/>
+  <path d="M144 104h224c35 0 64 29 64 64v176c0 24-16 44-38 51l22 37h-55l-20-32H171l-20 32H96l22-37c-22-7-38-27-38-51V168c0-35 29-64 64-64Z" fill="#fff"/>
+  <rect x="128" y="152" width="256" height="120" rx="20" fill="#252a34"/>
+  <path d="M256 152v120M128 212h256" stroke="#fff" stroke-width="12" opacity=".8"/>
+  <circle cx="160" cy="336" r="25" fill="#252a34"/>
+  <circle cx="352" cy="336" r="25" fill="#252a34"/>
+  <path d="M176 304h160" stroke="#c8102e" stroke-width="16" stroke-linecap="round"/>
+</svg>

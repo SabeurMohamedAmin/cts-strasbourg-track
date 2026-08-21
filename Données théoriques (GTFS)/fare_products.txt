@@ -1,0 +1,58 @@
+fare_product_id,fare_product_name,rider_category_id,fare_media_id,amount,currency
+aller_simple_bus,Aller Simple (à bord du bus),,bsc,2.50,EUR
+aller_simple,Aller Simple,,bsc,1.90,EUR
+aller_simple,Aller Simple,,badgeo,1.90,EUR
+aller_simple,Aller Simple,,app,1.90,EUR
+aller_simple_2,Aller Simple par 2,,bsc,3.60,EUR
+aller_simple_2,Aller Simple par 2,,badgeo,3.60,EUR
+aller_simple_2,Aller Simple par 2,,app,3.60,EUR
+aller_simple_10,Aller Simple par 10,,bsc,17.10,EUR
+aller_simple_10,Aller Simple par 10,,badgeo,17.10,EUR
+aller_simple_10,Aller Simple par 10,,app,17.10,EUR
+aller_simple_30,Aller Simple par 30,,badgeo,47.50,EUR
+aller_simple_30,Aller Simple par 30,,app,47.50,EUR
+aller_simple_10_tr,Aller Simple par 10 tarif réduit,enfants_4_11,bsc,15.20,EUR
+aller_simple_10_tr,Aller Simple par 10 tarif réduit,familles_nombreuses,bsc,15.20,EUR
+aller_simple_10_tr,Aller Simple par 10 tarif réduit,plus_65_ans,bsc,15.20,EUR
+24H,24H Solo,,bsc,4.60,EUR
+24H_trio,24H Trio,,bsc,10.20,EUR
+24H_trio,24H Trio,,app,10.20,EUR
+72H,72H Solo,,bsc,10.20,EUR
+72H,72H Solo,,app,10.20,EUR
+gratuit,Gratuit enfants de moins de 4ans,enfants_moins_4,sans_titre,0.00,EUR
+gratuit_ems,Abonnement gratuit pour les 4 - 17 ans,jeunes_ems,badgeo,0.00,EUR
+gratuit_ems,Abonnement gratuit pour les 4 - 17 ans,jeunes_ems,app,0.00,EUR
+abonnement_4_17,Abonnement tarif plein de 4 à 17 ans,4_17,badgeo,28.00,EUR
+abonnement_4_17,Abonnement tarif plein de 4 à 17 ans,4_17,app,28.00,EUR
+abonnement_18_25,Abonnement tarif plein de 18 à 25 ans,18_25,badgeo,28.00,EUR
+abonnement_18_25,Abonnement tarif plein de 18 à 25 ans,18_25,app,28.00,EUR
+abonnement_26_64,Abonnement tarif plein de 26 à 64 ans,26_64,badgeo,56.00,EUR
+abonnement_26_64,Abonnement tarif plein de 26 à 64 ans,26_64,app,56.00,EUR
+abonnement_plus_65_ans,Abonnement tarif plein plus de 65 ans,plus_65_ans,badgeo,28.00,EUR
+abonnement_plus_65_ans,Abonnement tarif plein plus de 65 ans,plus_65_ans,app,28.00,EUR
+abonnement_pmr,Abonnement PMR,pmr,badgeo,28.00,EUR
+abonnement_pmr,Abonnement PMR,pmr,app,28.00,EUR
+abonnement_4_17_qf1,Abonnement QF1 de 4 à 17 ans,4_17_qf1,badgeo,3.40,EUR
+abonnement_4_17_qf1,Abonnement QF1 de 4 à 17 ans,4_17_qf1,app,3.40,EUR
+abonnement_18_25_qf1,Abonnement QF1 de 18 à 25 ans,18_25_qf1,badgeo,3.40,EUR
+abonnement_18_25_qf1,Abonnement QF1 de 18 à 25 ans,18_25_qf1,app,3.40,EUR
+abonnement_26_64_qf1,Abonnement QF1 de 26 à 64 ans,26_64_qf1,badgeo,5.80,EUR
+abonnement_26_64_qf1,Abonnement QF1 de 26 à 64 ans,26_64_qf1,app,5.80,EUR
+abonnement_plus_65_ans_qf1,Abonnement QF1 plus de 65 ans,plus_65_ans_qf1,badgeo,3.40,EUR
+abonnement_plus_65_ans_qf1,Abonnement QF1 plus de 65 ans,plus_65_ans_qf1,app,3.40,EUR
+abonnement_4_17_qf2,Abonnement QF2 de 4 à 17 ans,4_17_qf2,badgeo,7.30,EUR
+abonnement_4_17_qf2,Abonnement QF2 de 4 à 17 ans,4_17_qf2,app,7.30,EUR
+abonnement_18_25_qf2,Abonnement QF2 de 18 à 25 ans,18_25_qf2,badgeo,7.30,EUR
+abonnement_18_25_qf2,Abonnement QF2 de 18 à 25 ans,18_25_qf2,app,7.30,EUR
+abonnement_26_64_qf2,Abonnement QF2 de 26 à 64 ans,26_64_qf2,badgeo,13.40,EUR
+abonnement_26_64_qf2,Abonnement QF2 de 26 à 64 ans,26_64_qf2,app,13.40,EUR
+abonnement_plus_65_ans_qf2,Abonnement QF2 plus de 65 ans,plus_65_ans_qf2,badgeo,7.30,EUR
+abonnement_plus_65_ans_qf2,Abonnement QF2 plus de 65 ans,plus_65_ans_qf2,app,7.30,EUR
+abonnement_4_17_qf3,Abonnement QF3 de 4 à 17 ans,4_17_qf3,badgeo,13.60,EUR
+abonnement_4_17_qf3,Abonnement QF3 de 4 à 17 ans,4_17_qf3,app,13.60,EUR
+abonnement_18_25_qf3,Abonnement QF3 de 18 à 25 ans,18_25_qf3,badgeo,13.60,EUR
+abonnement_18_25_qf3,Abonnement QF3 de 18 à 25 ans,18_25_qf3,app,13.60,EUR
+abonnement_26_64_qf3,Abonnement QF3 de 26 à 64 ans,26_64_qf3,badgeo,25.70,EUR
+abonnement_26_64_qf3,Abonnement QF3 de 26 à 64 ans,26_64_qf3,app,25.70,EUR
+abonnement_plus_65_ans_qf3,Abonnement QF3 plus de 65 ans,plus_65_ans_qf3,badgeo,13.60,EUR
+abonnement_plus_65_ans_qf3,Abonnement QF3 plus de 65 ans,plus_65_ans_qf3,app,13.60,EUR

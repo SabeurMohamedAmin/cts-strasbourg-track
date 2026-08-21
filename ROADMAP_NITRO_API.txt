@@ -1,0 +1,267 @@
+================================================================
+ CTS STRASBOURG TRACK - ROADMAP: EXPOSE NUXT/NITRO API
+            FOR THE FLUTTER MOBILE APP (ANDROID / IOS)
+================================================================
+Legend:  [x] done   [~] in progress   [ ] todo
+
+Goal: the web stays Nuxt/Vuetify. The same Nitro backend must
+serve the Flutter app as a clean, stable, documented public API.
+
+----------------------------------------------------------------
+STEP 1 - INVENTORY & SCOPE
+----------------------------------------------------------------
+[x] 1.1  Nitro API routes exist (server/api/stops, routes, stations,
+         vehicles, stream, eurometropole, geocode)
+[x] 1.2  api-version middleware exists (server/middleware/api-version.ts)
+[x] 1.3  List endpoints the mobile app NEEDS (public transit data)
+         Inventory from server/api (2026-08-18, dev-mobile):
+           GET /api/stops                    list / search
+           GET /api/stops/[id]               stop detail
+           GET /api/stops/[id]/arrivals      real-time arrivals
+           GET /api/stops/arrivals           bulk arrivals
+           GET /api/stops/nearby             geolocation
+           GET /api/routes                   lines list
+           GET /api/routes/[id]/shape        line shape
+           GET /api/routes/shapes            bulk shapes (documented in
+                                             docs/API.md; was absent from
+                                             ROADMAP_FIXES #5 endpoint list)
+           GET /api/vehicles                 REST fallback
+           GET /api/stream/vehicles          SSE live positions
+           GET /api/geocode                  address search
+           GET /api/eurometropole/bounds     map framing bbox
+           GET /api/stations/[slug]/schedule station timetable
+           GET /api/blog + /api/blog/[slug]  public content (FLUTTER 4.11)
+[x] 1.4  List endpoints to keep PRIVATE (admin/*, blog admin)
+         PRIVATE - never exposed in v1, must be blocked by auth (3.2):
+           /api/admin/login | logout | stats
+           /api/admin/articles/**   (CRUD, 5 handlers)
+           /api/admin/categories/** (CRUD, 4 handlers)
+           /api/admin/media/upload
+           /api/admin/password/forgot | reset
+         (server/routes robots.txt + sitemap.xml are web-only, not API.)
+[x] 1.5  Decide the public surface: /api/v1/stops, /api/v1/routes,
+         /api/v1/stations, /api/v1/vehicles, /api/v1/geocode,
+         /api/v1/blog, /api/v1/disruptions
+         DECIDED 2026-08-18: v1 = every endpoint listed in 1.3 under
+         the /api/v1 prefix, plus /api/v1/disruptions when Step 8
+         lands. Nothing else is public.
+
+----------------------------------------------------------------
+STEP 2 - API CONTRACT & VERSIONING
+----------------------------------------------------------------
+[x] 2.1  Freeze response shapes: define types in shared/ for every
+         public endpoint (single source of truth)
+         Done 2026-08-18: shared/types/api-v1.ts holds the cross-cutting
+         envelopes + new v1 resources; transit shapes stay in their own
+         shared/types/*.ts files and are re-used as-is.
+[x] 2.2  Standard error format: { statusCode, code, message }
+         Done 2026-08-18: server/utils/api-error.ts (apiError()) emits the
+         frozen shape; rate-limit + security middleware use it.
+[x] 2.3  Standard success envelope + pagination for list endpoints
+         (limit/offset or cursor on /stops, /routes)
+         Done 2026-08-18: Paginated<T> + PaginationMeta in api-v1.ts.
+         Existing list endpoints keep their frozen array shape (the web app
+         already consumes them); the envelope applies to NEW list endpoints.
+[x] 2.4  Enforce /api/v1 prefix via api-version middleware
+         Done 2026-08-18: /api/v1/admin/** blocked (404) from the public
+         alias; X-API-Version: 1 header on versioned responses.
+         Remaining: deprecate unversioned /api/* for browsers AFTER the
+         web app migrates to /api/v1 (FLUTTER 1.8 alignment gate).
+[x] 2.5  Write OpenAPI 3 spec (docs/openapi.yaml) covering v1
+         Done 2026-08-18: docs/openapi.yaml covers every v1 endpoint.
+[x] 2.6  Serve the spec: GET /api/v1/openapi.json
+         Done 2026-08-18: server/api/openapi.json.get.ts serves the spec
+         from server/services/openapi-spec.ts (kept in sync with the YAML).
+[x] 2.7  Rule: never break v1; breaking changes go to /api/v2
+         Codified in docs/openapi.yaml + shared/types/api-v1.ts headers.
+
+----------------------------------------------------------------
+STEP 3 - SECURITY & ACCESS CONTROL
+----------------------------------------------------------------
+[x] 3.1  Confirm CTS credentials are used server-side only
+         (server/services/realtime/cts-client.ts) - never in Flutter
+         Verified 2026-08-18: token read from runtimeConfig inside
+         server-only code; never in the public block, cannot reach clients.
+[x] 3.2  Block /api/admin/* from public access (auth middleware,
+         reject requests without a valid session/token)
+         Verified 2026-08-18: every /api/admin/** handler calls
+         requireAdmin() (401 without a session); /api/v1/admin/** is 404.
+[x] 3.3  Add a lightweight app token for mobile clients
+         (X-App-Token header checked in middleware)
+         Done 2026-08-18: server/middleware/api-security.ts enforces
+         X-App-Token on non-browser /api/v1/* requests when NUXT_APP_TOKEN
+         is set. Same-origin browser traffic is exempt (PWA keeps working).
+[x] 3.4  CORS: web app is same-origin; mobile does not need CORS,
+         so keep CORS strict (no wildcard *)
+         Done 2026-08-18: api-security.ts only reflects the configured
+         canonical origin, never '*'.
+[x] 3.5  Rate limiting per IP/token on public endpoints
+         (protect CTS quota behind your cache)
+         Done 2026-08-18: server/utils/rate-limit.ts (fixed window, per
+         token-or-IP) wired into api-security.ts; SSE + health + spec exempt.
+[x] 3.6  HTTPS only + HSTS on the production host
+         Done 2026-08-18: api-security.ts sets Strict-Transport-Security on
+         every /api/* response (no-op on http://localhost).
+
+----------------------------------------------------------------
+STEP 4 - REAL-TIME STRATEGY FOR MOBILE
+----------------------------------------------------------------
+[x] 4.1  Verify /api/stream/vehicles (SSE) works from a non-browser
+         client (curl test with long-lived connection)
+         VERIFIED 2026-08-18 with `pnpm api:smoke` (scripts/smoke-v1.ts):
+         17 passed / 0 failed against `pnpm dev`. The stream delivered an
+         `event: vehicles` frame plus an `event: heartbeat` over a 20 s
+         connection from Node (no browser), and /vehicles answered 304 on
+         revalidation (5.2). Re-run against staging for 7.2:
+           SMOKE_BASE_URL=https://<staging> pnpm api:smoke
+
+         Fixed on the way: /api/v1/* had NEVER resolved. The middleware URL
+         rewrite is ignored by Nitro's route matcher, and a routeRules proxy
+         broke SSE (204, raw res.write cannot cross a proxy hop). The alias
+         is now one-line re-export handlers in server/api/v1/**.
+[x] 4.2  Add heartbeat/keep-alive events so mobile detects drops
+         Done: SSE stream emits `event: heartbeat` every 20 s
+         (server/api/stream/vehicles.get.ts).
+[x] 4.3  Provide a polling fallback: GET /api/v1/vehicles with
+         Cache-Control + short TTL (mobile networks kill SSE)
+         Done 2026-08-18: /vehicles sends Cache-Control max-age=5 + ETag.
+[x] 4.4  Document reconnection strategy (Last-Event-ID support)
+         Done: Last-Event-ID replay is implemented in the SSE stream and
+         documented in docs/API.md ("Real-time strategy for mobile").
+[x] 4.5  Decide arrivals refresh contract for stops
+         (/api/v1/stops/:id/arrivals - polling interval guidance)
+         Done 2026-08-18: poll every 30 s on screen; documented in API.md.
+
+----------------------------------------------------------------
+STEP 5 - PERFORMANCE & CACHING
+----------------------------------------------------------------
+[x] 5.1  Cache-Control headers on static-ish data (stops, routes,
+         shapes: hours; arrivals/vehicles: seconds)
+         Done 2026-08-18: arrivals/vehicles now send short Cache-Control;
+         stops/routes/shapes/blog already cached for hours.
+[x] 5.2  ETag support so Flutter can do conditional GETs
+         Done 2026-08-18: server/utils/etag.ts (SHA-256 strong ETag +
+         sendNotModified 304 helper) wired into /vehicles, /stops/:id/arrivals,
+         /stops/:id/next-departures, /disruptions.
+[x] 5.3  Gzip/br compression enabled on JSON responses
+         Done 2026-08-18: handled by the Nitro node-server runtime when the
+         client sends Accept-Encoding (gzip/br); noted in docs/API.md.
+[ ] 5.4  Slim payloads: mobile variants if needed (?fields=,
+         simplified shapes for map polylines)
+         Partially: /stops/:id/next-departures (8.5) is the slim widget
+         variant. ?fields= projection deferred until a real need is measured.
+[ ] 5.5  Load test the public endpoints (k6 or autocannon)
+         TODO: needs a running server + a load-test tool.
+         First timings from `pnpm api:smoke` (2026-08-18, local dev, COLD
+         caches — the first call to each endpoint fills them):
+           /stops/{id}/arrivals   13111 ms  (next call to the same data: 50 ms)
+           /routes/shapes          1915 ms
+           /stops                   982 ms  (1361 platforms)
+           everything else          <200 ms
+         So the numbers to chase are cold-start costs, not steady state:
+         a fresh mobile install or a just-restarted server pays them.
+         Warm the arrivals/schedule caches on boot (see
+         server/plugins/warm-schedule-cache.ts) or measure them under load
+         before deciding on 5.4.
+
+----------------------------------------------------------------
+STEP 6 - DEPLOYMENT & ENVIRONMENTS
+----------------------------------------------------------------
+[ ] 6.1  Stable base URLs: prod api at https://<domain>/api/v1,
+         staging equivalent for the Flutter dev flavor
+[x] 6.2  Health endpoint: GET /api/v1/health (db + CTS poller status)
+         Done 2026-08-18: server/api/health.get.ts reports database up/down
+         and ctsPoller live/stale/disabled; always 200, status field carries
+         the degraded signal.
+[x] 6.3  Request logging with response times (extend
+         server/plugins/request-logger.ts)
+         Done 2026-08-18: log lines now tag [v1] vs [legacy] traffic so the
+         /api/v1 migration can be watched.
+[ ] 6.4  Error tracking on server (Sentry) with endpoint tags
+         TODO: needs a Sentry project + DSN (external service).
+[x] 6.5  Contract tests (spec vs real responses) run locally
+         before every MR (no pipeline - see issue #1)
+         Done 2026-08-18: tests/unit/api-contract.test.ts guards the frozen
+         v1 surface against docs/openapi.yaml; run with `pnpm test`.
+
+----------------------------------------------------------------
+STEP 7 - FLUTTER HANDSHAKE
+----------------------------------------------------------------
+[ ] 7.1  Generate Dart client from /api/v1/openapi.json
+[ ] 7.2  Smoke-test every public endpoint from the Flutter app
+         (dev flavor -> staging API)
+[ ] 7.3  Verify SSE or polling behavior on real devices
+         (Android Doze, iOS background limits)
+[ ] 7.4  Pin the contract: any server change must regenerate the
+         Dart client in the same MR cycle
+
+----------------------------------------------------------------
+STEP 8 - PARITY & MOBILE-PLUS FEATURES (backend)
+----------------------------------------------------------------
+[x] 8.1  Public blog read API in v1: GET /api/v1/blog and
+         /api/v1/blog/[slug] (published only, ?locale=fr) -
+         same frozen-contract rule as transit endpoints
+         Done 2026-08-18: existing /api/blog handlers are reachable under
+         /api/v1 via the alias; documented in docs/openapi.yaml.
+[x] 8.2  Disruptions: table + GET /api/v1/disruptions
+         (admin CRUD reuses the admin shell - see ADMIN roadmap
+         Phase 11)
+         Done 2026-08-18: disruptions table (migration 0005) +
+         server/api/disruptions.get.ts (current/upcoming, critical first,
+         ETag + short cache). Admin CRUD still to build in the admin shell.
+[x] 8.3  Device registration: POST /api/v1/devices
+         (FCM token, platform android|ios, favorite line ids)
+         Done 2026-08-18: devices table (migration 0005) +
+         server/api/devices.post.ts (idempotent upsert on fcm_token).
+[x] 8.4  Push sender service (server-side FCM; key in
+         runtimeConfig, never in clients). Web push (VAPID)
+         shares the same disruptions source.
+         Done 2026-08-18: server/services/push/fcm-client.ts (FCM HTTP v1,
+         service-account JWT -> OAuth token, node:crypto only) +
+         disruption-push.ts (targeting + dead-token pruning) +
+         server/plugins/disruption-push.ts (60 s sweep of rows with
+         pushed_at IS NULL, severity warning|critical). Migration 0006 adds
+         disruptions.pushed_at. No-ops until NUXT_FCM_* is set.
+         Remaining: web push (VAPID) reuses the same targeting; and the
+         send path needs one live test against a real FCM project.
+[x] 8.5  Widget endpoint: GET /api/v1/stops/:id/next-departures
+         (tiny payload, aggressive Cache-Control - home-screen widget)
+         Done 2026-08-18: server/api/stops/[id]/next-departures.get.ts
+         projects the full arrivals merge down to a compact payload.
+[x] 8.6  Favorites: DECISION - v1 = local-only on both clients
+         (web localStorage / Flutter Hive); server sync = v2
+         Recorded 2026-08-18: no server work in v1.
+[x] 8.7  Analytics: POST /api/v1/track accepts mobile events
+         (X-App-Token) with platform dimension web|android|ios
+         Done 2026-08-18: server/api/track.post.ts validates + logs (202).
+         Persistence/forwarding to an analytics backend is a later step.
+
+----------------------------------------------------------------
+STEP 9 - HARDENING BEFORE THE PUSH SENDER (8.4)
+----------------------------------------------------------------
+[x] 9.7  Devices table spam: POST /api/v1/devices is an unauthenticated
+         write. Before wiring the FCM sender (8.4), add stale-token
+         cleanup + a per-IP registration cap.
+         Done 2026-08-18: dedicated per-IP bucket (10 registrations/hour)
+         in devices.post.ts + server/plugins/devices-cleanup.ts prunes
+         tokens not refreshed in 180 days (daily sweep).
+
+----------------------------------------------------------------
+OPEN DATA ISSUE (found 2026-08-18 by `pnpm api:smoke`)
+----------------------------------------------------------------
+The stops table has NO location_type=1 rows: `GET /stops?type=station`
+returns []. Consequences:
+  - /api/v1/stations/{slug}/schedule can never resolve a slug (it slugifies
+    station names), so the endpoint is untestable and unusable as shipped.
+  - Any station-level UI or Flutter screen built on ?type=station is empty.
+Check first:  select location_type, count(*) from stops group by 1;
+If every row is 0, scripts/import-gtfs.ts is not importing parent stations
+(or the CTS feed has none) — decide before the Flutter handshake, because
+the station timetable is part of the frozen v1 contract.
+
+----------------------------------------------------------------
+RULES
+----------------------------------------------------------------
+- The Nitro backend is the ONLY consumer of the CTS API.
+- Flutter and Nuxt web consume the exact same /api/v1 endpoints.
+- Update this file as you go: [ ] -> [~] -> [x]

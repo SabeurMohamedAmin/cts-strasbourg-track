@@ -1,0 +1,23 @@
+rider_category_id,rider_category_name,is_default_fare_category,eligibility_url
+tarif_normal,Tarif normal,1,
+enfants_4_11,Enfants de 4 à 11 ans,0,
+enfants_moins_4,Enfants de moins de 4ans,0,https://www.cts-strasbourg.eu/fr/faq/voyager-en-regle/details/A-partir-de-quel-age-doit-on-etre-en-possession-dun-titre-de-transport-/
+jeunes_ems,Jeunes habitant dans l'Eurométropole de Strasbourg ou Kehl,0,https://cts-strasbourg.eu/fr/acheter/nos-titres/titres-reguliers/gratuite-4-a-17ans/
+familles_nombreuses,Familles nombreuses,0,
+plus_65_ans,Plus de 65 ans,0,
+4_17,4 à 17 ans,0,
+18_25,18 à 25 ans,0,
+26_64,26 à 64 ans,0,
+pmr,PMR,0,https://www.cts-strasbourg.eu/fr/acheter/nos-titres/titres-reguliers/abonnement-tarif-reduit/
+4_17_qf1,4 à 17 ans avec un QF1 ou échelon de bourse 5-6-7,0,https://www.cts-strasbourg.eu/fr/acheter/nos-titres/titres-reguliers/abonnement-tarif-reduit/
+18_25_qf1,18 à 25 ans avec un QF1 ou échelon de bourse 5-6-7,0,https://www.cts-strasbourg.eu/fr/acheter/nos-titres/titres-reguliers/abonnement-tarif-reduit/
+26_64_qf1,26 à 64 ans avec un QF1 ou échelon de bourse 5-6-7,0,https://www.cts-strasbourg.eu/fr/acheter/nos-titres/titres-reguliers/abonnement-tarif-reduit/
+plus_65_ans_qf1,Plus de 65 ans avec un QF1 ou échelon de bourse 5-6-7,0,https://www.cts-strasbourg.eu/fr/acheter/nos-titres/titres-reguliers/abonnement-tarif-reduit/
+4_17_qf2,4 à 17 ans avec un QF2 ou échelon de bourse 3-4,0,https://www.cts-strasbourg.eu/fr/acheter/nos-titres/titres-reguliers/abonnement-tarif-reduit/
+18_25_qf2,18 à 25 ans avec un QF2 ou échelon de bourse 3-4,0,https://www.cts-strasbourg.eu/fr/acheter/nos-titres/titres-reguliers/abonnement-tarif-reduit/
+26_64_qf2,26 à 64 ans avec un QF2 ou échelon de bourse 3-4,0,https://www.cts-strasbourg.eu/fr/acheter/nos-titres/titres-reguliers/abonnement-tarif-reduit/
+plus_65_ans_qf2,Plus de 65 ans avec un QF2 ou échelon de bourse 3-4,0,https://www.cts-strasbourg.eu/fr/acheter/nos-titres/titres-reguliers/abonnement-tarif-reduit/
+4_17_qf3,4 à 17 ans avec un QF3 ou échelon de bourse 1-2,0,https://www.cts-strasbourg.eu/fr/acheter/nos-titres/titres-reguliers/abonnement-tarif-reduit/
+18_25_qf3,18 à 25 ans avec un QF3 ou échelon de bourse 1-2,0,https://www.cts-strasbourg.eu/fr/acheter/nos-titres/titres-reguliers/abonnement-tarif-reduit/
+26_64_qf3,26 à 64 ans avec un QF3 ou échelon de bourse 1-2,0,https://www.cts-strasbourg.eu/fr/acheter/nos-titres/titres-reguliers/abonnement-tarif-reduit/
+plus_65_ans_qf3,Plus de 65 ans avec un QF3 ou échelon de bourse 1-2,0,https://www.cts-strasbourg.eu/fr/acheter/nos-titres/titres-reguliers/abonnement-tarif-reduit/

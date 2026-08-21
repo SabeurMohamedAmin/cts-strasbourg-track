@@ -1,0 +1,164 @@
+=== CTS Tracker — Pre-Flutter Fix Checklist ===
+Created: 2026-07-24
+Status tracking: [ ] Not started  [/] In progress  [x] Done
+Priority: P0 = blocker  P1 = before PWA deploy  P2 = nice-to-have
+
+-----------------------------------------------
+P0 — BLOCKERS (do first, 1 day)
+-----------------------------------------------
+[x] 1. DELETE duplicate layout
+      File: app/layouts/other-page.vue
+      Action: Remove. Confirmed byte-for-byte duplicate of default.vue; never referenced.
+      Verify: grep layout: app/pages — returns nothing referencing 'other-page'.
+
+[x] 2. FIX pollIntervalMs discrepancy
+      File: .env.example (line: NUXT_POLL_INTERVAL_MS="30000")
+      File: nuxt.config.ts (runtimeConfig.pollIntervalMs: 12000)
+      Decision needed: 12000ms (matches poller + SSE intent) OR 30000ms.
+      Action: Update .env.example to match chosen value. Add comment explaining.
+      Verify: .env.example value === nuxt.config.ts value.
+
+[x] 3. ADD html lang="fr"
+      File: nuxt.config.ts (app.head.htmlAttrs)
+      Action: Add lang: 'fr' to match PWA manifest lang: 'fr' and French UI.
+      Verify: Build output has <html lang="fr">.
+
+-----------------------------------------------
+P1 — BEFORE PWA DEPLOY / FLUTTER PREP (1–2 days)
+-----------------------------------------------
+[x] 4. DATA ATTRIBUTION (GTFS + tiles + CTS)
+      File: app/components/ui/InfoPageShell.vue or new component
+      File: app/pages/a-propos.vue (add section)
+      Requirements:
+        - GTFS: transport.data.gouv.fr — dataset name + license (LO/OdBL)
+        - Map tiles: OpenFreeMap — attribution string
+        - CTS SIRI: placeholder line, add real attribution once token received
+      Verify: Visible in footer or About page on every page load.
+
+[x] 5. FREEZE API CONTRACT — write docs/API.md
+      Source of truth: shared/types/*.ts, server/api/**/*.ts
+      Sections per endpoint: method, URL, params, response shape, error codes
+      Endpoints to document:
+        GET /api/stops
+        GET /api/stops/[id]
+        GET /api/stops/[id]/arrivals
+        GET /api/stops/nearby
+        GET /api/stops/arrivals
+        GET /api/stream/vehicles  (SSE)
+        GET /api/vehicles  (REST fallback)
+        GET /api/routes
+        GET /api/routes/[id]/shape
+        GET /api/geocode
+        GET /api/eurometropole/bounds
+        GET /api/stations/[slug]/schedule
+      Purpose: Flutter spec — do NOT change endpoints after this without versioning.
+      Verify: File exists, covers all endpoints, matches current server code.
+
+[x] 6. NON-INFRINGING NAME DECISION
+      Current: "CTS Tracker Strasbourg" — uses registered trademark CTS
+      Options (pick ONE):
+        A) Strasbourg Trams Live
+        B) Tram2S
+        C) Strasbourg Transit
+        D) Custom invented name
+      Action: Update app.head.title (nuxt.config.ts), PWA manifest name/short_name,
+              public/icon.svg alt text, domain if registering.
+      Verify: No "CTS" in product-facing strings (legal pages excepted for attribution).
+
+-----------------------------------------------
+P2 — VALIDATE BACKEND (2–4 weeks, concurrent with CTS token wait)
+-----------------------------------------------
+[/] 7. DEPLOY PWA TO REAL DOMAIN
+      Host chosen: NORTHFLANK with BUILDPACK build type (no Docker —
+      it reads package.json: install, pnpm build, then `start` script).
+      Node pinned via engines field (22.x). Netlify config kept until
+      Northflank verified.
+      Action: create Northflank service from the GitLab repo (dev-mobile
+      or main), build type Buildpack, port 3000/HTTP public, set env
+      vars (see .env.example + runtimeConfig), attach Postgres, point
+      domain.
+      Verify: /, /live, /plan, /favoris load without console errors;
+      /api/stream/vehicles holds a long-lived SSE connection.
+
+[/] 8. CTS SIRI TOKEN REQUESTED
+      URL: https://api.cts-strasbourg.eu
+      Action: Submit request. Save confirmation/reference number.
+      Note: If refused/restricted — document terms before proceeding with Flutter.
+      Verify: Email confirmation saved; token TOS read.
+      Status: TOKEN RECEIVED (May 2026). Remaining before [x]: read the
+      TOS and record the terms below — item 11 gates flutter create on
+      "TOS permits app use". Token lives in .env (NUXT_CTS_API_TOKEN),
+      server-side only, never committed.
+
+[ ] 9. PRODUCTION SSE STABILITY CHECK (2-week observation)
+      Monitor after deploy:
+        - server/services/realtime/poller.ts — any crash loops?
+        - /api/stream/vehicles — reconnect frequency from real clients?
+        - /api/vehicles (REST fallback) — called correctly when SSE breaks?
+        - Database — pool exhaustion errors in logs?
+      Verify: No critical errors in server logs for 14 consecutive days.
+
+[/] 10. GTFS FALLBACK TESTED
+        Code path VERIFIED in source (2026-08-18): poller no-ops without
+        NUXT_CTS_API_TOKEN (server/plugins/poller.ts); /api/vehicles falls
+        back to getScheduledSnapshot() and only degrades to an empty
+        'stale' snapshot when the DB is also unreachable
+        (server/api/vehicles.get.ts). Live + simulated are never mixed.
+        Remaining: RUN it once locally with a real DATABASE_URL:
+          1. In .env: NUXT_CTS_API_TOKEN=""  ->  pnpm dev
+          2. curl -s localhost:3000/api/vehicles
+             expect vehicles[].status == "scheduled" (non-empty array)
+          3. curl -N localhost:3000/api/stream/vehicles
+             expect first `event: vehicles` frame with scheduled statuses
+             + `event: heartbeat` every ~20 s
+          4. curl -s "localhost:3000/api/stops/<id>/arrivals"
+             expect arrivals[].status == "scheduled"
+          5. Browser: map renders simulated vehicles; connection chip
+             shows the scheduled/theoretical label.
+        Verify: all 5 checks pass; restore the token afterwards.
+
+-----------------------------------------------
+P3 — FLUTTER READINESS GATE (only after P0+P1+P2 completed)
+-----------------------------------------------
+[x] 11. MOVED (2026-08-18) → ROADMAP_FLUTTER.txt Phase 3.0.
+        The readiness checklist now lives directly above the
+        flutter create steps it gates. Track progress there.
+
+-----------------------------------------------
+OPTIONAL / FUTURE
+-----------------------------------------------
+[x] 12. ADD SERVER-SIDE API VERSIONING (optional before Flutter)
+        File: server/api/*.get.ts (add ?v=1 query support, or path prefix /v1)
+        Purpose: Allows changing endpoints for Flutter without breaking PWA.
+        Done: server/middleware/api-version.ts aliases /api/v1/* to /api/*
+        (2026-07-24). Verify locally: GET /api/v1/stops must equal /api/stops.
+
+[x] 13. ADD REQUEST LOGGING / METRICS (optional)
+        Action: Simple console.log or external logging service tracking
+        endpoint latency and error rates.
+        Done: server/plugins/request-logger.ts (2026-07-24).
+
+-----------------------------------------------
+NOTES / DECISIONS LOG
+-----------------------------------------------
+Poll interval decision (P0 #2):
+  Chosen: 12000ms
+  Justification: matches runtimeConfig.pollIntervalMs default in
+  nuxt.config.ts and the cadence the realtime poller + SSE stream were
+  designed around. .env.example updated accordingly (2026-07-24).
+
+CTS token status (P2 #8):
+  Requested: 2026-05 (exact date not recorded)
+  Response received: 2026-05 — token in hand (logged 2026-08-18)
+  Terms (free / commercial / restricted / refused): UNKNOWN — TOS not yet
+    reviewed. TODO: re-read the confirmation email / api.cts-strasbourg.eu
+    terms and record free/commercial/restricted here before the Flutter
+    readiness gate (item 11).
+
+App name chosen (P1 #6):
+  Name: Strasbourg Bus-Trams Live (chosen 2026-07-24)
+  Domain (if new): to be decided — note: contact email still uses
+    cts-tracker.app (see TODO(owner) in app/pages/contact.vue)
+
+Flutter start date (P3 #11):
+  Target: 2026-___-___ (only after all P0+P1 checked, token confirmed, 2-week stability reached)
